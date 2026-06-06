@@ -23,6 +23,17 @@ function initApp() {
   // 隐藏加载页面
   document.getElementById('page-loading').classList.add('hidden');
 
+  // 预设账号 111 和 222（密码与账号相同）
+  const users = getUsers();
+  if (!users['111']) {
+    users['111'] = simpleHash('111');
+    saveUsers(users);
+  }
+  if (!users['222']) {
+    users['222'] = simpleHash('222');
+    saveUsers(users);
+  }
+
   // 检查登录状态
   const savedUser = localStorage.getItem('sw_current_user');
   if (savedUser) {
