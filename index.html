@@ -8,12 +8,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>北京社工题库</title>
 <style>
+/* ========== 基础重置 ========== */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   background: #f5f7fa; color: #333; line-height: 1.6; overscroll-behavior-y: none;
 }
 .container { max-width: 800px; margin: 0 auto; padding: 12px; padding-bottom: 80px; }
+.hidden { display: none !important; }
+
+/* ========== 通用组件 ========== */
 header {
   background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
   color: white; padding: 24px 16px; text-align: center;
@@ -40,8 +44,127 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .btn-danger:active { background: #d33b28; transform: scale(0.97); }
 .btn-secondary { background: #f1f3f4; color: #444; }
 .btn-secondary:active { background: #e8eaed; transform: scale(0.97); }
+.btn-warning { background: #fbbc04; color: #333; }
+.btn-warning:active { background: #e5a800; transform: scale(0.97); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
 
+/* ========== 加载中 ========== */
+.loading { text-align: center; padding: 40px; color: #666; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid #e8eaed;
+  border-top-color: #1a73e8; border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ========== 登录页面 ========== */
+.page-login-bg {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 40%, #7baaf7 100%);
+  padding: 20px;
+}
+.login-card {
+  background: white; border-radius: 20px; padding: 36px 28px;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.login-logo {
+  text-align: center; margin-bottom: 28px;
+}
+.login-logo-icon {
+  width: 64px; height: 64px; background: linear-gradient(135deg, #1a73e8, #4285f4);
+  border-radius: 16px; margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.login-logo-icon svg { width: 36px; height: 36px; }
+.login-logo h1 { font-size: 1.3em; color: #1a1a1a; }
+.login-logo p { font-size: 0.85em; color: #888; margin-top: 4px; }
+.login-form { display: flex; flex-direction: column; gap: 14px; }
+.login-form label { font-size: 0.85em; color: #555; font-weight: 500; }
+.login-input {
+  width: 100%; padding: 14px 16px; border: 2px solid #e8eaed; border-radius: 12px;
+  font-size: 1em; font-family: inherit; transition: border-color 0.2s; outline: none;
+}
+.login-input:focus { border-color: #1a73e8; }
+.login-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  color: white; font-size: 1.05em; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: all 0.15s; margin-top: 6px;
+}
+.login-btn:active { transform: scale(0.97); opacity: 0.9; }
+.login-switch {
+  text-align: center; margin-top: 16px; font-size: 0.85em; color: #888;
+}
+.login-switch a { color: #1a73e8; text-decoration: none; cursor: pointer; font-weight: 500; }
+.login-switch a:active { opacity: 0.7; }
+.login-error {
+  background: #fce8e6; color: #d32f2f; padding: 10px 14px; border-radius: 10px;
+  font-size: 0.85em; text-align: center; display: none;
+}
+.login-error.show { display: block; }
+.login-guest {
+  text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;
+}
+.login-guest-btn {
+  background: none; border: 2px solid #e8eaed; border-radius: 12px;
+  padding: 10px 24px; color: #666; font-size: 0.9em; cursor: pointer;
+  font-family: inherit; transition: all 0.15s;
+}
+.login-guest-btn:active { background: #f5f5f5; transform: scale(0.97); }
+
+/* ========== 首页 ========== */
+.countdown-card {
+  background: linear-gradient(135deg, #ea4335 0%, #f06d60 100%);
+  border-radius: 14px; padding: 20px; margin-bottom: 12px; color: white;
+  box-shadow: 0 4px 16px rgba(234,67,53,0.25);
+}
+.countdown-card h2 { color: white; margin-bottom: 8px; font-size: 1em; }
+.countdown-days {
+  font-size: 3.5em; font-weight: 800; line-height: 1.1; text-align: center;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.countdown-label { text-align: center; font-size: 0.9em; opacity: 0.9; margin-top: 4px; }
+.countdown-sub { text-align: center; font-size: 0.8em; opacity: 0.8; margin-top: 8px; }
+
+.review-remind-card {
+  background: linear-gradient(135deg, #fbbc04 0%, #f9d56e 100%);
+  border-radius: 14px; padding: 18px; margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(251,188,4,0.2);
+}
+.review-remind-card h2 { color: #5f4b00; margin-bottom: 8px; font-size: 1em; }
+.review-remind-list { list-style: none; }
+.review-remind-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.88em; color: #5f4b00;
+}
+.review-remind-item:last-child { border-bottom: none; }
+.review-remind-count {
+  background: rgba(255,255,255,0.6); padding: 2px 10px; border-radius: 10px;
+  font-weight: 600; font-size: 0.85em;
+}
+.review-remind-empty { font-size: 0.88em; color: #7a6200; text-align: center; padding: 8px 0; }
+
+.high-freq-wrong-card {
+  background: linear-gradient(135deg, #ea4335 0%, #ff6f61 100%);
+  border-radius: 14px; padding: 18px; margin-bottom: 12px; color: white;
+  box-shadow: 0 4px 16px rgba(234,67,53,0.2);
+}
+.high-freq-wrong-card h2 { color: white; margin-bottom: 8px; font-size: 1em; }
+.high-freq-wrong-item {
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2);
+  font-size: 0.88em; cursor: pointer;
+}
+.high-freq-wrong-item:last-child { border-bottom: none; }
+.high-freq-wrong-item:active { opacity: 0.8; }
+.high-freq-wrong-count {
+  display: inline-block; background: rgba(255,255,255,0.3);
+  padding: 1px 8px; border-radius: 8px; font-size: 0.8em; margin-left: 6px;
+}
+.high-freq-wrong-empty { font-size: 0.88em; text-align: center; padding: 8px 0; opacity: 0.9; }
+
+/* ========== 刷题模式选择 ========== */
 .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
 @media (max-width: 360px) { .subject-grid { grid-template-columns: 1fr; } }
 .subject-card {
@@ -72,6 +195,7 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .filter-btn:active { transform: scale(0.95); }
 .filter-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
 
+/* ========== 刷题页面 ========== */
 .question-card { background: white; border-radius: 14px; padding: 18px; margin-bottom: 12px; }
 .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 4px; }
 .question-num { font-weight: bold; color: #1a73e8; font-size: 0.9em; }
@@ -119,15 +243,38 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .result-score { font-size: 2.5em; font-weight: bold; color: #1a73e8; }
 .result-detail { margin-top: 10px; font-size: 0.95em; color: #666; }
 
-.wrong-book-item {
-  padding: 14px; border-bottom: 1px solid #eee; cursor: pointer;
+/* 统一看答案模式 - 答案折叠 */
+.answer-collapse {
+  margin-top: 12px; border: 2px solid #e8eaed; border-radius: 12px; overflow: hidden;
 }
-.wrong-book-item:active { background: #f0f0f0; }
-.wrong-book-item:last-child { border-bottom: none; }
-.wrong-book-q { font-size: 0.92em; color: #333; margin-bottom: 4px; line-height: 1.5; }
-.wrong-book-a { font-size: 0.8em; color: #ea4335; }
+.answer-collapse-header {
+  padding: 12px 16px; background: #f8f9fa; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.9em; font-weight: 600; color: #555;
+}
+.answer-collapse-header:active { background: #f0f0f0; }
+.answer-collapse-icon { transition: transform 0.2s; font-size: 0.8em; }
+.answer-collapse-icon.open { transform: rotate(180deg); }
+.answer-collapse-body { display: none; padding: 14px 16px; }
+.answer-collapse-body.show { display: block; }
+.answer-result-correct { color: #34a853; font-weight: 600; font-size: 0.9em; margin-bottom: 6px; }
+.answer-result-wrong { color: #ea4335; font-weight: 600; font-size: 0.9em; margin-bottom: 6px; }
+.answer-correct-answer { font-size: 0.88em; color: #1a73e8; margin-bottom: 4px; }
+.answer-explanation { font-size: 0.85em; color: #666; line-height: 1.6; margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #1a73e8; }
 
-/* 错题分析样式 */
+/* ========== 结果页面 ========== */
+.result-question-item {
+  padding: 14px; border-bottom: 1px solid #eee;
+}
+.result-question-item:last-child { border-bottom: none; }
+.result-question-text { font-size: 0.92em; color: #333; margin-bottom: 6px; line-height: 1.5; }
+.result-question-status {
+  display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 0.78em; font-weight: 600;
+}
+.result-question-status.correct { background: #e6f4ea; color: #34a853; }
+.result-question-status.wrong { background: #fce8e6; color: #ea4335; }
+
+/* ========== 错题分析 ========== */
 .analysis-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
 .analysis-card { background: #f8f9fa; border-radius: 12px; padding: 14px; text-align: center; }
 .analysis-card .num { font-size: 1.8em; font-weight: bold; color: #1a73e8; }
@@ -153,7 +300,116 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .tip-box h3 { color: #1a73e8; font-size: 0.95em; margin-bottom: 8px; }
 .tip-box p { color: #555; font-size: 0.88em; line-height: 1.6; }
 
-/* 底部导航 */
+/* 高频错题标记 */
+.wrong-book-item {
+  padding: 14px; border-bottom: 1px solid #eee; cursor: pointer;
+  border-left: 4px solid transparent;
+}
+.wrong-book-item:active { background: #f0f0f0; }
+.wrong-book-item:last-child { border-bottom: none; }
+.wrong-book-item.high-freq {
+  border-left-color: #ea4335;
+  background: #fff5f5;
+}
+.wrong-book-item.high-freq .wrong-book-q::after {
+  content: "高频错题"; display: inline-block; background: #ea4335; color: white;
+  font-size: 0.7em; padding: 1px 6px; border-radius: 6px; margin-left: 6px;
+  vertical-align: middle; font-weight: 600;
+}
+.wrong-book-q { font-size: 0.92em; color: #333; margin-bottom: 4px; line-height: 1.5; }
+.wrong-book-a { font-size: 0.8em; color: #ea4335; }
+.wrong-book-meta { font-size: 0.75em; color: #999; margin-top: 4px; }
+
+/* ========== 备考冲刺页面 ========== */
+.plan-countdown-section {
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  border-radius: 16px; padding: 28px 20px; text-align: center; color: white;
+  margin-bottom: 16px; box-shadow: 0 8px 24px rgba(26,115,232,0.25);
+}
+.plan-countdown-days {
+  font-size: 5em; font-weight: 800; line-height: 1; text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.plan-countdown-label { font-size: 1.1em; opacity: 0.9; margin-top: 8px; }
+.plan-countdown-date { font-size: 0.85em; opacity: 0.75; margin-top: 4px; }
+
+.plan-timeline { position: relative; padding-left: 28px; }
+.plan-timeline::before {
+  content: ""; position: absolute; left: 10px; top: 0; bottom: 0;
+  width: 3px; background: #e8eaed; border-radius: 2px;
+}
+.plan-timeline-item {
+  position: relative; margin-bottom: 20px; padding: 14px 16px;
+  background: #f8f9fa; border-radius: 12px;
+}
+.plan-timeline-item::before {
+  content: ""; position: absolute; left: -22px; top: 18px;
+  width: 12px; height: 12px; border-radius: 50%; background: #1a73e8;
+  border: 3px solid white; box-shadow: 0 0 0 2px #1a73e8;
+}
+.plan-timeline-item.completed::before { background: #34a853; box-shadow: 0 0 0 2px #34a853; }
+.plan-timeline-item.current { background: #e8f0fe; border: 2px solid #1a73e8; }
+.plan-timeline-item.current::before { background: #fbbc04; box-shadow: 0 0 0 2px #fbbc04; }
+.plan-timeline-phase { font-weight: 600; color: #1a73e8; font-size: 0.95em; margin-bottom: 4px; }
+.plan-timeline-date { font-size: 0.78em; color: #999; margin-bottom: 6px; }
+.plan-timeline-desc { font-size: 0.88em; color: #555; line-height: 1.5; }
+.plan-timeline-tasks { list-style: none; margin-top: 8px; }
+.plan-timeline-tasks li {
+  font-size: 0.82em; color: #666; padding: 3px 0;
+  padding-left: 16px; position: relative;
+}
+.plan-timeline-tasks li::before {
+  content: ""; position: absolute; left: 0; top: 10px;
+  width: 6px; height: 6px; border-radius: 50%; background: #1a73e8;
+}
+
+/* ========== 记忆复习页面 ========== */
+.review-stage-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.review-stage-badge {
+  padding: 4px 12px; border-radius: 10px; font-size: 0.82em; font-weight: 600;
+  white-space: nowrap;
+}
+.review-stage-badge.stage-1 { background: #e8f0fe; color: #1a73e8; }
+.review-stage-badge.stage-2 { background: #e6f4ea; color: #34a853; }
+.review-stage-badge.stage-4 { background: #fff3e0; color: #e65100; }
+.review-stage-badge.stage-7 { background: #fce8e6; color: #ea4335; }
+.review-stage-badge.stage-15 { background: #f3e8fd; color: #7b1fa2; }
+.review-stage-badge.stage-30 { background: #fce8e6; color: #c62828; }
+.review-stage-title { font-size: 0.88em; color: #666; }
+
+.review-card {
+  background: white; border-radius: 14px; padding: 16px; margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-left: 4px solid #1a73e8;
+}
+.review-card.stage-1 { border-left-color: #1a73e8; }
+.review-card.stage-2 { border-left-color: #34a853; }
+.review-card.stage-4 { border-left-color: #e65100; }
+.review-card.stage-7 { border-left-color: #ea4335; }
+.review-card.stage-15 { border-left-color: #7b1fa2; }
+.review-card.stage-30 { border-left-color: #c62828; }
+
+.review-card-question { font-size: 0.92em; color: #333; line-height: 1.5; margin-bottom: 8px; }
+.review-card-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
+.review-card-subject { font-size: 0.75em; color: #888; background: #f1f3f4; padding: 2px 8px; border-radius: 8px; }
+.review-card-date { font-size: 0.75em; color: #999; }
+.review-card-actions { display: flex; gap: 6px; margin-top: 10px; }
+.review-card-actions .btn { padding: 8px 14px; font-size: 0.82em; margin: 0; }
+
+.review-empty { text-align: center; padding: 40px 20px; color: #999; }
+.review-empty-icon { font-size: 3em; margin-bottom: 12px; }
+.review-empty-text { font-size: 0.95em; }
+
+.review-filter-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.review-filter-btn {
+  padding: 6px 14px; border: 1px solid #ddd; border-radius: 20px;
+  background: white; cursor: pointer; font-size: 0.82em; transition: all 0.15s;
+}
+.review-filter-btn:active { transform: scale(0.95); }
+.review-filter-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
+
+/* ========== 底部导航 ========== */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: white; border-top: 1px solid #e8eaed;
@@ -162,221 +418,525 @@ header p { opacity: 0.92; font-size: 0.85em; }
 }
 .bottom-nav-item {
   flex: 1; text-align: center; padding: 4px;
-  cursor: pointer; color: #666; font-size: 0.75em;
+  cursor: pointer; color: #666; font-size: 0.7em;
   transition: color 0.2s;
 }
 .bottom-nav-item.active { color: #1a73e8; }
-.bottom-nav-item svg { display: block; margin: 0 auto 2px; width: 24px; height: 24px; }
+.bottom-nav-item svg { display: block; margin: 0 auto 2px; width: 22px; height: 22px; }
 
-.loading { text-align: center; padding: 40px; color: #666; }
-.spinner {
-  width: 36px; height: 36px; border: 3px solid #e8eaed;
-  border-top-color: #1a73e8; border-radius: 50%;
-  animation: spin 0.8s linear infinite; margin: 0 auto 12px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.hidden { display: none !important; }
-
-/* 手机横屏小优化 */
+/* ========== 响应式 ========== */
 @media (min-width: 600px) {
   .option { padding: 16px 18px; }
   .question-text { font-size: 1.1em; }
+  .plan-countdown-days { font-size: 6em; }
+}
+@media (max-width: 360px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .analysis-grid { grid-template-columns: repeat(2, 1fr); }
+  .countdown-days { font-size: 2.5em; }
+  .plan-countdown-days { font-size: 3.5em; }
 }
 </style>
 </head>
 <body>
+
+<!-- ==================== 登录页面 ==================== -->
+<div id="page-login">
+  <div class="page-login-bg">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"></path>
+          </svg>
+        </div>
+        <h1>北京社工题库</h1>
+        <p>社区工作者招聘考试刷题系统</p>
+      </div>
+
+      <div class="login-error" id="login-error"></div>
+
+      <!-- 登录表单 -->
+      <div class="login-form" id="login-form">
+        <div>
+          <label>账号</label>
+          <input type="text" class="login-input" id="login-username" placeholder="请输入账号" autocomplete="username">
+        </div>
+        <div>
+          <label>密码</label>
+          <input type="password" class="login-input" id="login-password" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+        <button class="login-btn" id="btn-login">登 录</button>
+      </div>
+
+      <!-- 注册表单 -->
+      <div class="login-form hidden" id="register-form">
+        <div>
+          <label>账号</label>
+          <input type="text" class="login-input" id="reg-username" placeholder="请设置账号（至少3位）" autocomplete="username">
+        </div>
+        <div>
+          <label>密码</label>
+          <input type="password" class="login-input" id="reg-password" placeholder="请设置密码（至少6位）" autocomplete="new-password">
+        </div>
+        <div>
+          <label>确认密码</label>
+          <input type="password" class="login-input" id="reg-password2" placeholder="请再次输入密码" autocomplete="new-password">
+        </div>
+        <button class="login-btn" id="btn-register">注 册</button>
+      </div>
+
+      <div class="login-switch" id="login-switch">
+        还没有账号？<a id="link-to-register">立即注册</a>
+      </div>
+      <div class="login-switch hidden" id="register-switch">
+        已有账号？<a id="link-to-login">返回登录</a>
+      </div>
+
+      <div class="login-guest">
+        <button class="login-guest-btn" id="btn-guest">游客模式（数据仅保存在本地）</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 主容器 ==================== -->
 <div class="container">
 
-<!-- 加载中 -->
-<div id="page-loading">
-  <div class="loading">
-    <div class="spinner"></div>
-    <p>正在加载题库...</p>
+  <!-- 加载中 -->
+  <div id="page-loading">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>正在加载题库...</p>
+    </div>
   </div>
+
+  <!-- ==================== 首页 ==================== -->
+  <div id="page-home" class="hidden">
+    <header>
+      <h1>北京社区工作者招聘考试题库</h1>
+      <p>近五年高频考点 · 420题全覆盖 · 智能刷题系统</p>
+    </header>
+
+    <!-- 考试倒计时卡片 -->
+    <div class="countdown-card" id="home-countdown-card">
+      <h2>考试倒计时</h2>
+      <div class="countdown-days" id="home-countdown-days">--</div>
+      <div class="countdown-label" id="home-countdown-label">距离考试还有</div>
+      <div class="countdown-sub" id="home-countdown-date">请设置考试日期</div>
+    </div>
+
+    <!-- 今日复习提醒卡片 -->
+    <div class="review-remind-card" id="home-review-remind-card">
+      <h2>今日复习提醒</h2>
+      <ul class="review-remind-list" id="home-review-remind-list">
+        <li class="review-remind-empty">暂无需要复习的题目</li>
+      </ul>
+    </div>
+
+    <!-- 高频错题卡片 -->
+    <div class="high-freq-wrong-card" id="home-high-freq-card">
+      <h2>高频错题（做错3次以上）</h2>
+      <div id="home-high-freq-list">
+        <div class="high-freq-wrong-empty">暂无高频错题，继续保持！</div>
+      </div>
+    </div>
+
+    <!-- 选择刷题模式 -->
+    <div class="card">
+      <h2>选择刷题模式</h2>
+      <div class="mode-select">
+        <div class="mode-btn selected" data-mode="all">
+          <h4>全部刷题</h4>
+          <p>所有科目混合出题</p>
+        </div>
+        <div class="mode-btn" data-mode="subject">
+          <h4>分科刷题</h4>
+          <p>按科目专项练习</p>
+        </div>
+        <div class="mode-btn" data-mode="wrong">
+          <h4>错题本</h4>
+          <p>复习做错的题目</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 选择科目 -->
+    <div class="card" id="subject-select-card">
+      <h2>选择科目（可多选）</h2>
+      <div class="subject-grid">
+        <div class="subject-card selected" data-subject="社工专业知识">
+          <h3>社工专业知识</h3>
+          <p>价值观、个案/小组/社区工作、实务</p>
+        </div>
+        <div class="subject-card selected" data-subject="社区工作知识">
+          <h3>社区工作知识</h3>
+          <p>社区建设、治理、接诉即办、党建</p>
+        </div>
+        <div class="subject-card selected" data-subject="行测">
+          <h3>行测</h3>
+          <p>言语理解、判断推理、数量关系</p>
+        </div>
+        <div class="subject-card selected" data-subject="公共基础知识">
+          <h3>公共基础知识</h3>
+          <p>时政、法律、政治理论、市情区情</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 题目数量 -->
+    <div class="card">
+      <h2>题目数量</h2>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-count="20">20题</button>
+        <button class="filter-btn" data-count="50">50题</button>
+        <button class="filter-btn" data-count="100">100题</button>
+        <button class="filter-btn" data-count="all">全部</button>
+      </div>
+    </div>
+
+    <!-- 开始刷题 -->
+    <div class="card" style="text-align:center;">
+      <button class="btn btn-primary" style="font-size:1.05em;padding:14px 32px;" id="btn-start-quiz">开始刷题</button>
+    </div>
+
+    <!-- 学习统计 -->
+    <div class="card">
+      <h2>学习统计</h2>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">总题数</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-done">0</div><div class="stat-label">已做题</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">正确数</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-wrong">0</div><div class="stat-label">错题数</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 刷题页面 ==================== -->
+  <div id="page-quiz" class="hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.85em;color:#666;">
+        <span id="quiz-progress-text">第 1 / 20 题</span>
+        <span id="quiz-timer">00:00</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="quiz-progress-bar" style="width:0%"></div></div>
+    </div>
+    <div id="quiz-question-container"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" id="btn-prev">上一题</button>
+      <button class="btn btn-primary" id="btn-check">查看答案</button>
+      <button class="btn btn-success hidden" id="btn-next">下一题</button>
+      <button class="btn btn-danger" id="btn-end-quiz">结束</button>
+    </div>
+  </div>
+
+  <!-- ==================== 结果页面（统一看答案模式） ==================== -->
+  <div id="page-result" class="hidden">
+    <div class="card result-summary">
+      <h2>刷题结果</h2>
+      <div class="result-score" id="result-score">0%</div>
+      <div class="result-detail" id="result-detail">答对 0 / 0 题</div>
+      <div style="margin-top:18px;">
+        <div class="stats-grid" style="max-width:480px;margin:0 auto;">
+          <div class="stat-box"><div class="stat-num" id="res-total">0</div><div class="stat-label">总题数</div></div>
+          <div class="stat-box"><div class="stat-num" id="res-correct">0</div><div class="stat-label">正确</div></div>
+          <div class="stat-box"><div class="stat-num" id="res-wrong">0</div><div class="stat-label">错误</div></div>
+          <div class="stat-box"><div class="stat-num" id="res-time">00:00</div><div class="stat-label">用时</div></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;">
+        <button class="btn btn-primary" id="btn-show-analysis">错题分析</button>
+        <button class="btn btn-success" id="btn-restart-quiz">再来一次</button>
+        <button class="btn btn-secondary" id="btn-go-home-result">返回首页</button>
+      </div>
+    </div>
+
+    <!-- 统一看答案 - 每题折叠展示 -->
+    <div class="card">
+      <h2>逐题查看答案</h2>
+      <div id="result-answers-list"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 错题分析页面 ==================== -->
+  <div id="page-analysis" class="hidden">
+    <div class="card">
+      <h2>错题分析报告</h2>
+      <div class="analysis-grid" id="analysis-overview">
+        <div class="analysis-card"><div class="num" id="ana-total">0</div><div class="label">总题数</div></div>
+        <div class="analysis-card"><div class="num" id="ana-wrong">0</div><div class="label">错题数</div></div>
+        <div class="analysis-card"><div class="num" id="ana-rate">0%</div><div class="label">错误率</div></div>
+        <div class="analysis-card"><div class="num" id="ana-weak">-</div><div class="label">薄弱科目</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>各科目错误分布</h2>
+      <div class="bar-chart" id="subject-chart"></div>
+    </div>
+
+    <div class="card">
+      <h2>知识点错误分布（Top 10）</h2>
+      <div class="bar-chart" id="category-chart"></div>
+    </div>
+
+    <div class="card hidden" id="weak-card">
+      <h2>薄弱知识点</h2>
+      <div class="weak-section">
+        <h3>以下知识点需要重点复习</h3>
+        <ul id="weak-list"></ul>
+      </div>
+      <div class="tip-box">
+        <h3>复习建议</h3>
+        <p id="tip-text"></p>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <button class="btn btn-primary" id="btn-review-wrong-ana">去错题本复习</button>
+      <button class="btn btn-success" id="btn-restart-quiz-ana">再来一次</button>
+      <button class="btn btn-secondary" id="btn-go-home-ana">返回首页</button>
+    </div>
+  </div>
+
+  <!-- ==================== 备考冲刺页面 ==================== -->
+  <div id="page-plan" class="hidden">
+    <header>
+      <h1>备考冲刺计划</h1>
+      <p>科学规划 · 高效复习 · 冲刺上岸</p>
+    </header>
+
+    <!-- 考试倒计时 -->
+    <div class="plan-countdown-section" id="plan-countdown-section">
+      <div class="plan-countdown-days" id="plan-countdown-days">--</div>
+      <div class="plan-countdown-label">天</div>
+      <div class="plan-countdown-date" id="plan-countdown-date">请设置考试日期</div>
+    </div>
+
+    <!-- 设置考试日期 -->
+    <div class="card">
+      <h2>设置考试日期</h2>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="date" id="exam-date-input" style="flex:1;min-width:180px;padding:12px 14px;border:2px solid #e8eaed;border-radius:12px;font-size:1em;font-family:inherit;outline:none;">
+        <button class="btn btn-primary" id="btn-set-exam-date">确认设置</button>
+      </div>
+    </div>
+
+    <!-- 备考方案时间轴 -->
+    <div class="card">
+      <h2>备考方案</h2>
+      <div class="plan-timeline" id="plan-timeline">
+        <div class="plan-timeline-item current">
+          <div class="plan-timeline-phase">第一阶段：基础夯实</div>
+          <div class="plan-timeline-date" id="plan-phase1-date">考前 60-30 天</div>
+          <div class="plan-timeline-desc">系统学习各科目基础知识，建立知识框架</div>
+          <ul class="plan-timeline-tasks">
+            <li>社工专业知识：通读教材，掌握核心概念</li>
+            <li>社区工作知识：了解政策法规和工作方法</li>
+            <li>行测：每天练习言语理解与判断推理</li>
+            <li>公基：关注时政热点，积累常识</li>
+          </ul>
+        </div>
+        <div class="plan-timeline-item">
+          <div class="plan-timeline-phase">第二阶段：专项突破</div>
+          <div class="plan-timeline-date" id="plan-phase2-date">考前 30-15 天</div>
+          <div class="plan-timeline-desc">针对薄弱环节专项训练，大量刷题</div>
+          <ul class="plan-timeline-tasks">
+            <li>分科目刷题，每天至少50题</li>
+            <li>重点攻克高频错题和薄弱知识点</li>
+            <li>整理错题本，归纳解题方法</li>
+            <li>行测专项：数量关系和资料分析</li>
+          </ul>
+        </div>
+        <div class="plan-timeline-item">
+          <div class="plan-timeline-phase">第三阶段：模拟冲刺</div>
+          <div class="plan-timeline-date" id="plan-phase3-date">考前 15-7 天</div>
+          <div class="plan-timeline-desc">模拟考试环境，提升答题速度和准确率</div>
+          <ul class="plan-timeline-tasks">
+            <li>整套模拟题限时训练</li>
+            <li>回顾错题本，查漏补缺</li>
+            <li>背诵重点知识点和法规条文</li>
+            <li>保持每天100题以上的刷题量</li>
+          </ul>
+        </div>
+        <div class="plan-timeline-item">
+          <div class="plan-timeline-phase">第四阶段：考前冲刺</div>
+          <div class="plan-timeline-date" id="plan-phase4-date">考前 7-1 天</div>
+          <div class="plan-timeline-desc">巩固记忆，调整心态，保持最佳状态</div>
+          <ul class="plan-timeline-tasks">
+            <li>艾宾浩斯复习法回顾所有错题</li>
+            <li>重点看高频错题和易混淆知识点</li>
+            <li>每天适量刷题保持手感</li>
+            <li>调整作息，保证充足睡眠</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 艾宾浩斯复习提醒 -->
+    <div class="card">
+      <h2>艾宾浩斯复习提醒</h2>
+      <p style="font-size:0.85em;color:#888;margin-bottom:12px;">根据遗忘曲线规律，系统会自动提醒你在最佳时间点复习</p>
+      <div id="plan-review-remind">
+        <div class="review-empty">
+          <div class="review-empty-icon">&#128276;</div>
+          <div class="review-empty-text">开始刷题后，系统将自动安排复习提醒</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 每日学习建议 -->
+    <div class="card">
+      <h2>每日学习建议</h2>
+      <div class="tip-box" style="margin-top:0;">
+        <h3>推荐学习计划</h3>
+        <p id="plan-daily-tip">设置考试日期后，系统将根据剩余天数生成个性化学习建议。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 记忆复习页面 ==================== -->
+  <div id="page-review" class="hidden">
+    <header>
+      <h1>艾宾浩斯记忆复习</h1>
+      <p>科学复习 · 高效记忆 · 战胜遗忘</p>
+    </header>
+
+    <!-- 复习阶段筛选 -->
+    <div class="card">
+      <h2>筛选复习阶段</h2>
+      <div class="review-filter-bar" id="review-filter-bar">
+        <button class="review-filter-btn active" data-stage="all">全部</button>
+        <button class="review-filter-btn" data-stage="1">1天后</button>
+        <button class="review-filter-btn" data-stage="2">2天后</button>
+        <button class="review-filter-btn" data-stage="4">4天后</button>
+        <button class="review-filter-btn" data-stage="7">7天后</button>
+        <button class="review-filter-btn" data-stage="15">15天后</button>
+        <button class="review-filter-btn" data-stage="30">30天后</button>
+      </div>
+    </div>
+
+    <!-- 复习统计 -->
+    <div class="card">
+      <h2>复习进度</h2>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="review-total">0</div><div class="stat-label">待复习</div></div>
+        <div class="stat-box"><div class="stat-num" id="review-done">0</div><div class="stat-label">已完成</div></div>
+        <div class="stat-box"><div class="stat-num" id="review-today">0</div><div class="stat-label">今日待复习</div></div>
+        <div class="stat-box"><div class="stat-num" id="review-overdue">0</div><div class="stat-label">已过期</div></div>
+      </div>
+    </div>
+
+    <!-- 复习题目列表 -->
+    <div id="review-list-container">
+      <!-- 1天后复习 -->
+      <div class="review-stage-section" data-stage="1">
+        <div class="review-stage-header">
+          <span class="review-stage-badge stage-1">1天后复习</span>
+          <span class="review-stage-title" id="review-stage1-count">0 题</span>
+        </div>
+        <div id="review-stage1-list"></div>
+      </div>
+
+      <!-- 2天后复习 -->
+      <div class="review-stage-section" data-stage="2">
+        <div class="review-stage-header">
+          <span class="review-stage-badge stage-2">2天后复习</span>
+          <span class="review-stage-title" id="review-stage2-count">0 题</span>
+        </div>
+        <div id="review-stage2-list"></div>
+      </div>
+
+      <!-- 4天后复习 -->
+      <div class="review-stage-section" data-stage="4">
+        <div class="review-stage-header">
+          <span class="review-stage-badge stage-4">4天后复习</span>
+          <span class="review-stage-title" id="review-stage4-count">0 题</span>
+        </div>
+        <div id="review-stage4-list"></div>
+      </div>
+
+      <!-- 7天后复习 -->
+      <div class="review-stage-section" data-stage="7">
+        <div class="review-stage-header">
+          <span class="review-stage-badge stage-7">7天后复习</span>
+          <span class="review-stage-title" id="review-stage7-count">0 题</span>
+        </div>
+        <div id="review-stage7-list"></div>
+      </div>
+
+      <!-- 15天后复习 -->
+      <div class="review-stage-section" data-stage="15">
+        <div class="review-stage-header">
+          <span class="review-stage-badge stage-15">15天后复习</span>
+          <span class="review-stage-title" id="review-stage15-count">0 题</span>
+        </div>
+        <div id="review-stage15-list"></div>
+      </div>
+
+      <!-- 30天后复习 -->
+      <div class="review-stage-section" data-stage="30">
+        <div class="review-stage-header">
+          <span class="review-stage-badge stage-30">30天后复习</span>
+          <span class="review-stage-title" id="review-stage30-count">0 题</span>
+        </div>
+        <div id="review-stage30-list"></div>
+      </div>
+    </div>
+
+    <!-- 复习空状态 -->
+    <div class="card hidden" id="review-empty-card">
+      <div class="review-empty">
+        <div class="review-empty-icon">&#128218;</div>
+        <div class="review-empty-text">暂无需要复习的题目</div>
+        <p style="font-size:0.85em;color:#aaa;margin-top:8px;">刷题后系统会自动安排复习计划</p>
+      </div>
+    </div>
+
+    <!-- 一键复习 -->
+    <div class="card" style="text-align:center;" id="review-action-card">
+      <button class="btn btn-primary" style="font-size:1.05em;padding:14px 32px;" id="btn-start-review">开始今日复习</button>
+      <button class="btn btn-secondary" id="btn-review-all">复习全部待复习题目</button>
+    </div>
+  </div>
+
+  <!-- ==================== 错题本页面 ==================== -->
+  <div id="page-wrong" class="hidden">
+    <div class="card">
+      <h2>错题本</h2>
+      <div class="filter-bar" id="wrong-filter-bar">
+        <button class="filter-btn active" data-filter="all">全部错题</button>
+        <button class="filter-btn" data-filter="high-freq">高频错题</button>
+      </div>
+      <div id="wrong-list"></div>
+      <div style="text-align:center;margin-top:16px;">
+        <button class="btn btn-secondary" id="btn-go-home-wrong">返回首页</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- 首页 -->
-<div id="page-home" class="hidden">
-  <header>
-    <h1>北京社区工作者招聘考试题库</h1>
-    <p>近五年高频考点 · 420题全覆盖 · 智能刷题系统</p>
-  </header>
-
-  <div class="card">
-    <h2>选择刷题模式</h2>
-    <div class="mode-select">
-      <div class="mode-btn selected" data-mode="all" onclick="selectMode(this)">
-        <h4>全部刷题</h4>
-        <p>所有科目混合出题</p>
-      </div>
-      <div class="mode-btn" data-mode="subject" onclick="selectMode(this)">
-        <h4>分科刷题</h4>
-        <p>按科目专项练习</p>
-      </div>
-      <div class="mode-btn" data-mode="wrong" onclick="selectMode(this)">
-        <h4>错题本</h4>
-        <p>复习做错的题目</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" id="subject-select-card">
-    <h2>选择科目（可多选）</h2>
-    <div class="subject-grid">
-      <div class="subject-card selected" data-subject="社工专业知识" onclick="toggleSubject(this)">
-        <h3>社工专业知识</h3>
-        <p>价值观、个案/小组/社区工作、实务</p>
-      </div>
-      <div class="subject-card selected" data-subject="社区工作知识" onclick="toggleSubject(this)">
-        <h3>社区工作知识</h3>
-        <p>社区建设、治理、接诉即办、党建</p>
-      </div>
-      <div class="subject-card selected" data-subject="行测" onclick="toggleSubject(this)">
-        <h3>行测</h3>
-        <p>言语理解、判断推理、数量关系</p>
-      </div>
-      <div class="subject-card selected" data-subject="公共基础知识" onclick="toggleSubject(this)">
-        <h3>公共基础知识</h3>
-        <p>时政、法律、政治理论、市情区情</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>题目数量</h2>
-    <div class="filter-bar">
-      <button class="filter-btn active" data-count="20" onclick="selectCount(this)">20题</button>
-      <button class="filter-btn" data-count="50" onclick="selectCount(this)">50题</button>
-      <button class="filter-btn" data-count="100" onclick="selectCount(this)">100题</button>
-      <button class="filter-btn" data-count="all" onclick="selectCount(this)">全部</button>
-    </div>
-  </div>
-
-  <div class="card" style="text-align:center;">
-    <button class="btn btn-primary" style="font-size:1.05em;padding:14px 32px;" onclick="startQuiz()">开始刷题</button>
-  </div>
-
-  <div class="card">
-    <h2>学习统计</h2>
-    <div class="stats-grid">
-      <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">总题数</div></div>
-      <div class="stat-box"><div class="stat-num" id="stat-done">0</div><div class="stat-label">已做题</div></div>
-      <div class="stat-box"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">正确数</div></div>
-      <div class="stat-box"><div class="stat-num" id="stat-wrong">0</div><div class="stat-label">错题数</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- 刷题页面 -->
-<div id="page-quiz" class="hidden">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.85em;color:#666;">
-      <span id="quiz-progress-text">第 1 / 20 题</span>
-      <span id="quiz-timer">00:00</span>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="quiz-progress-bar" style="width:0%"></div></div>
-  </div>
-  <div id="quiz-question-container"></div>
-  <div class="nav-buttons">
-    <button class="btn btn-secondary" id="btn-prev" onclick="prevQuestion()">上一题</button>
-    <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()">查看答案</button>
-    <button class="btn btn-success hidden" id="btn-next" onclick="nextQuestion()">下一题</button>
-    <button class="btn btn-danger" onclick="endQuiz()">结束</button>
-  </div>
-</div>
-
-<!-- 结果页面 -->
-<div id="page-result" class="hidden">
-  <div class="card result-summary">
-    <h2>刷题结果</h2>
-    <div class="result-score" id="result-score">0%</div>
-    <div class="result-detail" id="result-detail">答对 0 / 0 题</div>
-    <div style="margin-top:18px;">
-      <div class="stats-grid" style="max-width:480px;margin:0 auto;">
-        <div class="stat-box"><div class="stat-num" id="res-total">0</div><div class="stat-label">总题数</div></div>
-        <div class="stat-box"><div class="stat-num" id="res-correct">0</div><div class="stat-label">正确</div></div>
-        <div class="stat-box"><div class="stat-num" id="res-wrong">0</div><div class="stat-label">错误</div></div>
-        <div class="stat-box"><div class="stat-num" id="res-time">00:00</div><div class="stat-label">用时</div></div>
-      </div>
-    </div>
-    <div style="margin-top:20px;">
-      <button class="btn btn-primary" onclick="showAnalysis()">错题分析</button>
-      <button class="btn btn-success" onclick="restartQuiz()">再来一次</button>
-      <button class="btn btn-secondary" onclick="goHome()">返回首页</button>
-    </div>
-  </div>
-</div>
-
-<!-- 错题分析页面 -->
-<div id="page-analysis" class="hidden">
-  <div class="card">
-    <h2>错题分析报告</h2>
-    <div class="analysis-grid" id="analysis-overview">
-      <div class="analysis-card"><div class="num" id="ana-total">0</div><div class="label">总题数</div></div>
-      <div class="analysis-card"><div class="num" id="ana-wrong">0</div><div class="label">错题数</div></div>
-      <div class="analysis-card"><div class="num" id="ana-rate">0%</div><div class="label">错误率</div></div>
-      <div class="analysis-card"><div class="num" id="ana-weak">-</div><div class="label">薄弱科目</div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>各科目错误分布</h2>
-    <div class="bar-chart" id="subject-chart"></div>
-  </div>
-
-  <div class="card">
-    <h2>知识点错误分布（Top 10）</h2>
-    <div class="bar-chart" id="category-chart"></div>
-  </div>
-
-  <div class="card hidden" id="weak-card">
-    <h2>薄弱知识点</h2>
-    <div class="weak-section">
-      <h3>以下知识点需要重点复习</h3>
-      <ul id="weak-list"></ul>
-    </div>
-    <div class="tip-box">
-      <h3>复习建议</h3>
-      <p id="tip-text"></p>
-    </div>
-  </div>
-
-  <div class="card" style="text-align:center;">
-    <button class="btn btn-primary" onclick="reviewWrong()">去错题本复习</button>
-    <button class="btn btn-success" onclick="restartQuiz()">再来一次</button>
-    <button class="btn btn-secondary" onclick="goHome()">返回首页</button>
-  </div>
-</div>
-
-<!-- 错题本页面 -->
-<div id="page-wrong" class="hidden">
-  <div class="card">
-    <h2>错题本</h2>
-    <div id="wrong-list"></div>
-    <div style="text-align:center;margin-top:16px;">
-      <button class="btn btn-secondary" onclick="goHome()">返回首页</button>
-    </div>
-  </div>
-</div>
-
-</div>
-
-<!-- 底部导航 -->
+<!-- ==================== 底部导航（5个tab） ==================== -->
 <div class="bottom-nav hidden" id="bottom-nav">
-  <div class="bottom-nav-item active" onclick="goHome()">
+  <div class="bottom-nav-item active" id="nav-home">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
     首页
   </div>
-  <div class="bottom-nav-item" onclick="startQuizFromNav()">
+  <div class="bottom-nav-item" id="nav-quiz">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"></path><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"></polygon></svg>
     刷题
   </div>
-  <div class="bottom-nav-item" onclick="showAnalysisFromNav()">
+  <div class="bottom-nav-item" id="nav-plan">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+    备考
+  </div>
+  <div class="bottom-nav-item" id="nav-analysis">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
     分析
   </div>
-  <div class="bottom-nav-item" onclick="reviewWrong()">
+  <div class="bottom-nav-item" id="nav-wrong">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg>
     错题
   </div>
@@ -384,3 +944,5 @@ header p { opacity: 0.92; font-size: 0.85em; }
 
 <script src="questions.js"></script>
 <script src="app.js"></script>
+</body>
+</html>
