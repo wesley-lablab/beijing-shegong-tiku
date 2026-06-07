@@ -737,6 +737,28 @@ header p { opacity: 0.92; font-size: 0.85em; }
   width: 0%; transition: width 0.3s;
 }
 
+/* 复习资源区域 */
+.review-resource-section { margin-top: 16px; }
+.review-resource-section h3 { font-size: 0.9em; font-weight: 700; color: #1a73e8; margin-bottom: 10px; }
+.review-resource-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: white; border-radius: 10px; margin-bottom: 8px;
+  border: 1px solid #e8eaed; transition: all 0.15s;
+}
+.review-resource-item:hover { border-color: #1a73e8; box-shadow: 0 2px 8px rgba(26,115,232,0.1); }
+.review-resource-icon { font-size: 1.3em; flex-shrink: 0; }
+.review-resource-info { flex: 1; }
+.review-resource-title { font-size: 0.82em; font-weight: 600; color: #1a1a1a; }
+.review-resource-desc { font-size: 0.72em; color: #888; margin-top: 2px; }
+.review-resource-action {
+  padding: 4px 10px; border-radius: 14px; border: none;
+  font-size: 0.72em; font-weight: 600; cursor: pointer; flex-shrink: 0;
+}
+.review-resource-action.audio { background: #e8f0fe; color: #1a73e8; }
+.review-resource-action.audio:hover { background: #d2e3fc; }
+.review-resource-action.video { background: #fce8e6; color: #ea4335; }
+.review-resource-action.video:hover { background: #fad2cf; }
+
 .essay-quotes-box {
   margin-top: 12px; padding: 14px; background: #fce8e6; border-radius: 12px;
   border-left: 4px solid #ea4335;
@@ -961,9 +983,12 @@ header p { opacity: 0.92; font-size: 0.85em; }
   <div id="page-quiz" class="hidden">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.85em;color:#666;">
-        <span id="quiz-progress-text">第 1 / 20 题</span>
+      <span id="quiz-progress-text">第 1 / 20 题</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-quit-quiz" id="btn-quit-quiz" style="padding:4px 12px;font-size:0.8em;border-radius:16px;border:1px solid #dadce0;background:white;color:#666;cursor:pointer;">✕ 退出</button>
         <span id="quiz-timer">00:00</span>
       </div>
+    </div>
       <div class="progress-bar"><div class="progress-fill" id="quiz-progress-bar" style="width:0%"></div></div>
     </div>
     <div id="quiz-question-container"></div>
@@ -1026,16 +1051,20 @@ header p { opacity: 0.92; font-size: 0.85em; }
     </div>
 
     <div class="card hidden" id="weak-card">
-      <h2>薄弱知识点</h2>
-      <div class="weak-section">
-        <h3>以下知识点需要重点复习（点击查看知识提纲）</h3>
-        <div id="weak-list"></div>
-      </div>
-      <div class="tip-box">
-        <h3>复习建议</h3>
-        <p id="tip-text"></p>
-      </div>
+    <h2>薄弱知识点</h2>
+    <div class="weak-section">
+      <h3>以下知识点需要重点复习（点击查看知识提纲）</h3>
+      <div id="weak-list"></div>
     </div>
+    <div class="tip-box">
+      <h3>📋 复习建议</h3>
+      <div id="tip-text"></div>
+    </div>
+    <div class="review-resource-section" id="review-resource-section" style="display:none;">
+      <h3>📚 复习资源</h3>
+      <div id="review-resources-list"></div>
+    </div>
+  </div>
 
     <div class="card" style="text-align:center;">
       <button class="btn btn-primary" id="btn-review-wrong-ana">去错题本复习</button>

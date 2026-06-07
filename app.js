@@ -526,6 +526,14 @@ function bindQuizEvents() {
   document.getElementById('btn-prev').addEventListener('click', prevQuestion);
   document.getElementById('btn-next').addEventListener('click', nextQuestion);
   document.getElementById('btn-end-quiz').addEventListener('click', endQuiz);
+
+  // 退出刷题按钮
+  document.getElementById('btn-quit-quiz').addEventListener('click', () => {
+    if (confirm('确定要退出本次刷题吗？当前进度将不会保存。')) {
+      stopTimer();
+      showPage('page-home');
+    }
+  });
 }
 
 function startQuiz() {
@@ -1036,6 +1044,7 @@ function updateAnalysis() {
     subjectStats[q.subject] = (subjectStats[q.subject] || 0) + 1;
   });
   const weakSubject = Object.entries(subjectStats).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+  const weakSubjectCount = Object.entries(subjectStats).sort((a, b) => b[1] - a[1])[0]?.[1] || 0;
 
   // 按知识点统计
   const categoryStats = {};
@@ -1108,13 +1117,73 @@ function updateAnalysis() {
     });
 
     // 生成建议
-    const tips = [
-      `您在「${weakSubject}」科目错题最多，建议优先复习该科目的基础概念和核心知识点。`,
-      '针对薄弱知识点，建议重新刷相关分类的题目，加深理解。',
-      '对于反复出错的题目，可以收藏到错题本，定期回顾。',
-      '建议结合教材或资料，系统性地学习薄弱章节的内容。'
-    ];
-    document.getElementById('tip-text').innerHTML = tips.join('<br><br>');
+    const tipsHtml = `
+      <div style="margin-bottom:10px;">
+        <strong>📊 薄弱分析：</strong>您在「${weakSubject}」科目错题最多（${weakSubjectCount}题），建议优先复习该科目的基础概念和核心知识点。
+      </div>
+      <div style="margin-bottom:10px;">
+        <strong>🔄 复习策略：</strong>
+        <ol style="margin:6px 0 0 18px;line-height:1.8;">
+          <li>先看下方知识提纲，快速梳理知识脉络</li>
+          <li>点击"朗读提纲"听语音加深记忆</li>
+          <li>观看推荐视频，系统学习薄弱章节</li>
+          <li>重新刷相关分类的题目，巩固理解</li>
+          <li>反复出错的题目收藏到错题本，定期回顾</li>
+        </ol>
+      </div>
+      <div>
+        <strong>💡 学习技巧：</strong>建议使用"费曼学习法"——学完一个知识点后，尝试用自己的话给别人讲一遍。如果讲不清楚，说明还没真正掌握，需要再复习。
+      </div>
+    `;
+    document.getElementById('tip-text').innerHTML = tipsHtml;
+
+    // 渲染复习资源（语音+视频）
+    const resourceSection = document.getElementById('review-resource-section');
+    const resourceList = document.getElementById('review-resources-list');
+    if (weakItems.length > 0) {
+      resourceSection.style.display = 'block';
+      
+      // 为每个薄弱知识点生成资源
+      let resourceHtml = '';
+      weakItems.forEach(([cat, count]) => {
+        const [sub, cate] = cat.split('-');
+        const outline = reviewOutlines[cate];
+        const outlineText = outline ? outline.sections.map(s => s.title + '：' + s.items.join('、')).join('；') : '';
+        
+        // 知识提纲语音
+        if (outlineText) {
+          resourceHtml += `
+            <div class="review-resource-item">
+              <div class="review-resource-icon">📖</div>
+              <div class="review-resource-info">
+                <div class="review-resource-title">「${cate}」知识提纲</div>
+                <div class="review-resource-desc">${sub} · 错${count}题 · 点击朗读提纲加深记忆</div>
+              </div>
+              <button class="review-resource-action audio" onclick="playTTS('${outlineText.replace(/'/g, "\\'").substring(0, 200)}', null)">
+                🔊 朗读
+              </button>
+            </div>`;
+        }
+        
+        // 视频学习资源（B站搜索链接）
+        const searchQuery = encodeURIComponent(`社区工作者考试 ${cate} 知识点讲解`);
+        resourceHtml += `
+          <div class="review-resource-item">
+            <div class="review-resource-icon">🎬</div>
+            <div class="review-resource-info">
+              <div class="review-resource-title">「${cate}」视频讲解</div>
+              <div class="review-resource-desc">在B站搜索相关教学视频，系统学习</div>
+            </div>
+            <a class="review-resource-action video" href="https://search.bilibili.com/all?keyword=${searchQuery}" target="_blank" rel="noopener">
+              ▶ 视频
+            </a>
+          </div>`;
+      });
+      
+      resourceList.innerHTML = resourceHtml;
+    } else {
+      resourceSection.style.display = 'none';
+    }
   } else {
     document.getElementById('weak-card').classList.add('hidden');
   }
@@ -2056,15 +2125,18 @@ let currentTTS = null;
 let ttsAudio = null;
 
 async function playTTS(text, btnId) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-
-  // 如果正在播放，则停止
+  // 停止之前的播放
   if (ttsAudio && !ttsAudio.paused) {
     ttsAudio.pause();
     ttsAudio.currentTime = 0;
-    updateTTSButton(btnId, false);
-    return;
+    if (btnId) updateTTSButton(btnId, false);
+  }
+
+  const btn = btnId ? document.getElementById(btnId) : null;
+
+  // 如果正在播放且有按钮，则停止（已在上方处理）
+  if (btn) {
+    // 按钮模式：点击切换播放/停止
   }
 
   // 截取文本（FreeTTS免费版限制1000字符）
