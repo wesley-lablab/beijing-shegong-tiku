@@ -9,7 +9,7 @@ let currentUser = null;          // 当前登录用户名，null表示未登录
 let currentQuestions = [];        // 当前刷题的题目列表
 let currentIndex = 0;            // 当前题目索引
 let userAnswers = {};             // 本轮用户答案 {questionId: answer}
-let quizMode = 'all';             // 刷题模式：all / subject / wrong / review
+let quizMode = 'all';             // 刷题模式：all / subject / wrong / review / random
 let selectedSubjects = ['社区工作专业知识', '社会建设知识', '党务知识', '公共管理', '时事政治', '法律基础', '西城区情'];
 let questionCount = 20;          // 题目数量
 let quizStartTime = 0;            // 刷题开始时间
@@ -357,7 +357,7 @@ function bindHomeEvents() {
       btn.classList.add('selected');
       quizMode = btn.dataset.mode;
       const subjectCard = document.getElementById('subject-select-card');
-      if (quizMode === 'wrong') {
+      if (quizMode === 'wrong' || quizMode === 'random') {
         subjectCard.classList.add('hidden');
       } else {
         subjectCard.classList.remove('hidden');
@@ -552,6 +552,16 @@ function startQuiz() {
   } else if (quizMode === 'review') {
     // 复习模式由 startReviewQuiz 处理，不会走到这里
     return;
+  } else if (quizMode === 'random') {
+    // 随机冲浪模式：从所有题目中随机抽取，不限制数量
+    let pool = allQuestions.filter(q => selectedSubjects.includes(q.subject));
+    if (pool.length === 0) {
+      alert('请至少选择一个科目！');
+      return;
+    }
+    pool = pool.sort(() => Math.random() - 0.5);
+    // 随机模式默认50题，但用户可以随时停止
+    currentQuestions = pool.slice(0, Math.min(50, pool.length));
   } else {
     // 全部/分科模式
     let pool = allQuestions.filter(q => selectedSubjects.includes(q.subject));
@@ -606,7 +616,13 @@ function renderQuestion() {
   const isTrueFalse = q.type === 'truefalse';
 
   // 更新进度
-  document.getElementById('quiz-progress-text').textContent = `第 ${currentIndex + 1} / ${total} 题${isTrueFalse ? ' [判断题]' : ''}`;
+  if (quizMode === 'random') {
+    document.getElementById('quiz-progress-text').textContent =
+      `第 ${currentIndex + 1} 题 · 随机冲浪（随时可停止）${isTrueFalse ? ' [判断题]' : ''}`;
+  } else {
+    document.getElementById('quiz-progress-text').textContent =
+      `第 ${currentIndex + 1} / ${total} 题${isTrueFalse ? ' [判断题]' : ''}`;
+  }
   document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
 
   // 检查当前题是否已作答
@@ -843,6 +859,36 @@ function endQuiz() {
   saveHistory(history);
   saveWrongIds(wrongMap);
   saveReviewPlan(review);
+
+  // 随机冲浪模式：正常保存错题和历史记录
+  if (quizMode === 'random') {
+    // 随机模式下正常保存错题和复习计划
+    currentQuestions.forEach(q => {
+      const userAnswer = userAnswers[q.id];
+      if (userAnswer === undefined) return;
+      const isCorrect = userAnswer === q.answer;
+
+      if (!isCorrect) {
+        // 答错了，更新错题记录
+        if (!wrongMap[q.id]) {
+          wrongMap[q.id] = { count: 1, firstWrongTime: Date.now() };
+        } else {
+          wrongMap[q.id].count++;
+        }
+        // 添加到复习计划
+        if (!review[q.id]) {
+          review[q.id] = {
+            firstWrongTime: Date.now(),
+            nextReviewTime: Date.now() + 1 * 24 * 60 * 60 * 1000,
+            stage: 1,
+            reviewCount: 0
+          };
+        }
+      }
+    });
+    saveWrongIds(wrongMap);
+    saveReviewPlan(review);
+  }
 
   // 重置刷题模式
   const wasReview = quizMode === 'review';
