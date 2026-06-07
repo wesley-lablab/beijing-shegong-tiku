@@ -489,6 +489,100 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .bottom-nav-item.active { color: #1a73e8; }
 .bottom-nav-item svg { display: block; margin: 0 auto 2px; width: 22px; height: 22px; }
 
+/* ========== 主观题/作文页面 ========== */
+.essay-list-item {
+  padding: 14px; border-bottom: 1px solid #eee; cursor: pointer;
+  border-left: 4px solid transparent; transition: background 0.15s;
+}
+.essay-list-item:active { background: #f0f0f0; }
+.essay-list-item:last-child { border-bottom: none; }
+.essay-list-year {
+  display: inline-block; background: #1a73e8; color: white;
+  font-size: 0.7em; padding: 1px 8px; border-radius: 8px; margin-right: 6px;
+  font-weight: 600;
+}
+.essay-list-title { font-size: 0.95em; font-weight: 600; color: #222; margin-bottom: 4px; }
+.essay-list-theme {
+  display: inline-block; background: #f1f3f4; color: #666;
+  font-size: 0.72em; padding: 1px 8px; border-radius: 8px; margin-right: 4px;
+}
+.essay-list-meta { font-size: 0.75em; color: #999; margin-top: 4px; }
+
+.essay-detail-card { margin-bottom: 12px; }
+.essay-material-box {
+  background: #f8f9fa; border-radius: 12px; padding: 16px;
+  border-left: 4px solid #fbbc04; margin-bottom: 12px;
+}
+.essay-material-title { font-weight: 700; color: #e65100; font-size: 0.9em; margin-bottom: 8px; }
+.essay-material-text { font-size: 0.88em; color: #444; line-height: 1.8; }
+.essay-requirement-box {
+  background: #e8f0fe; border-radius: 12px; padding: 14px;
+  margin-bottom: 12px; font-size: 0.85em; color: #1a73e8; line-height: 1.6;
+}
+.essay-requirement-box strong { color: #1557b0; }
+
+.essay-write-area {
+  width: 100%; min-height: 300px; padding: 14px; border: 2px solid #e8eaed;
+  border-radius: 12px; font-size: 0.95em; font-family: inherit;
+  line-height: 1.8; resize: vertical; outline: none;
+}
+.essay-write-area:focus { border-color: #1a73e8; }
+.essay-write-toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; flex-wrap: wrap; gap: 6px;
+}
+.essay-word-count { font-size: 0.82em; color: #888; }
+.essay-word-count.over { color: #ea4335; font-weight: 600; }
+
+.essay-sample-toggle {
+  display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+  background: #fff3e0; border-radius: 12px; cursor: pointer;
+  font-size: 0.9em; font-weight: 600; color: #e65100;
+  margin-top: 12px; transition: background 0.15s;
+}
+.essay-sample-toggle:active { background: #ffe0b2; }
+.essay-sample-toggle-icon { transition: transform 0.2s; font-size: 0.8em; }
+.essay-sample-toggle-icon.open { transform: rotate(180deg); }
+
+.essay-sample-box {
+  display: none; margin-top: 12px; padding: 16px;
+  background: #e6f4ea; border-radius: 12px; border: 2px solid #34a853;
+}
+.essay-sample-box.show { display: block; }
+.essay-sample-title { font-weight: 700; font-size: 1.05em; color: #1b5e20; margin-bottom: 10px; text-align: center; }
+.essay-sample-content { font-size: 0.92em; color: #333; line-height: 2; text-indent: 2em; }
+.essay-sample-content p { margin-bottom: 8px; }
+
+.essay-tips-box {
+  margin-top: 12px; padding: 14px; background: #f3e8fd; border-radius: 12px;
+  border-left: 4px solid #7b1fa2;
+}
+.essay-tips-title { font-weight: 700; font-size: 0.88em; color: #7b1fa2; margin-bottom: 8px; }
+.essay-tips-list { list-style: none; }
+.essay-tips-list li {
+  font-size: 0.82em; color: #555; padding: 4px 0; padding-left: 16px;
+  position: relative; line-height: 1.5;
+}
+.essay-tips-list li::before {
+  content: "💡"; position: absolute; left: 0; top: 4px; font-size: 0.9em;
+}
+
+.essay-quotes-box {
+  margin-top: 12px; padding: 14px; background: #fce8e6; border-radius: 12px;
+  border-left: 4px solid #ea4335;
+}
+.essay-quotes-title { font-weight: 700; font-size: 0.88em; color: #c62828; margin-bottom: 8px; }
+.essay-quotes-list { list-style: none; }
+.essay-quotes-list li {
+  font-size: 0.82em; color: #555; padding: 4px 0; padding-left: 16px;
+  position: relative; line-height: 1.5; font-style: italic;
+}
+.essay-quotes-list li::before {
+  content: "📌"; position: absolute; left: 0; top: 4px; font-size: 0.9em;
+}
+
+.essay-filter-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+
 /* ========== 响应式 ========== */
 @media (min-width: 600px) {
   .option { padding: 16px 18px; }
@@ -624,6 +718,9 @@ header p { opacity: 0.92; font-size: 0.85em; }
           <h4>错题本</h4>
           <p>复习做错的题目</p>
         </div>
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn btn-warning" id="btn-go-essay" style="font-size:0.95em;padding:12px 24px;">✍️ 主观题/作文练习（15题+范文）</button>
       </div>
     </div>
 
@@ -978,6 +1075,77 @@ header p { opacity: 0.92; font-size: 0.85em; }
     </div>
   </div>
 
+  <!-- ==================== 主观题/作文页面 ==================== -->
+  <div id="page-essay" class="hidden">
+    <!-- 列表视图 -->
+    <div id="essay-list-view">
+      <header>
+        <h1>主观题练习</h1>
+        <p>材料作文 · 高分范文 · 写作技巧</p>
+      </header>
+      <div class="card">
+        <h2>按年份筛选</h2>
+        <div class="essay-filter-bar" id="essay-filter-bar">
+          <button class="filter-btn active" data-year="all">全部</button>
+          <button class="filter-btn" data-year="2025">2025</button>
+          <button class="filter-btn" data-year="2024">2024</button>
+          <button class="filter-btn" data-year="2023">2023</button>
+          <button class="filter-btn" data-year="2022">2022</button>
+          <button class="filter-btn" data-year="2021">2021</button>
+        </div>
+        <div id="essay-list"></div>
+      </div>
+    </div>
+    <!-- 详情视图 -->
+    <div id="essay-detail-view" class="hidden">
+      <div class="card" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <button class="btn btn-secondary" id="btn-essay-back" style="padding:8px 14px;font-size:0.85em;">← 返回列表</button>
+        <span id="essay-detail-year-tag" class="essay-list-year"></span>
+        <span id="essay-detail-title" style="font-weight:600;font-size:0.95em;"></span>
+      </div>
+      <div class="card essay-detail-card">
+        <div class="essay-material-box">
+          <div class="essay-material-title">给定材料</div>
+          <div class="essay-material-text" id="essay-detail-material"></div>
+        </div>
+        <div class="essay-requirement-box" id="essay-detail-requirement"></div>
+      </div>
+      <div class="card essay-detail-card">
+        <h2>✍️ 开始写作</h2>
+        <textarea class="essay-write-area" id="essay-write-area" placeholder="在此输入你的作文..."></textarea>
+        <div class="essay-write-toolbar">
+          <span class="essay-word-count" id="essay-word-count">已写 0 字</span>
+          <div>
+            <button class="btn btn-secondary" id="btn-essay-save" style="padding:8px 14px;font-size:0.85em;">保存草稿</button>
+            <button class="btn btn-danger" id="btn-essay-clear" style="padding:8px 14px;font-size:0.85em;">清空</button>
+          </div>
+        </div>
+      </div>
+      <div class="card essay-detail-card">
+        <div class="essay-sample-toggle" id="essay-sample-toggle">
+          <span class="essay-sample-toggle-icon">&#9660;</span>
+          📖 查看高分范文（建议先自己写再看）
+        </div>
+        <div class="essay-sample-box" id="essay-sample-box">
+          <div class="essay-sample-title" id="essay-sample-title"></div>
+          <div class="essay-sample-content" id="essay-sample-content"></div>
+        </div>
+      </div>
+      <div class="card essay-detail-card">
+        <div class="essay-tips-box">
+          <div class="essay-tips-title">📝 写作要点</div>
+          <ul class="essay-tips-list" id="essay-tips-list"></ul>
+        </div>
+      </div>
+      <div class="card essay-detail-card">
+        <div class="essay-quotes-box">
+          <div class="essay-quotes-title">📌 可引用金句</div>
+          <ul class="essay-quotes-list" id="essay-quotes-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== 错题本页面 ==================== -->
   <div id="page-wrong" class="hidden">
     <div class="card">
@@ -1020,6 +1188,7 @@ header p { opacity: 0.92; font-size: 0.85em; }
 </div>
 
 <script src="questions.js"></script>
+<script src="essay_questions.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -13,6 +13,8 @@ let quizStartTime = 0;            // 刷题开始时间
 let timerInterval = null;         // 计时器引用
 let wrongFilter = 'all';         // 错题本筛选：all / high-freq
 let reviewFilter = 'all';        // 复习阶段筛选：all / 1 / 2 / 4 / 7 / 15 / 30
+let essayFilter = 'all';          // 主观题年份筛选：all / 2021-2025
+let currentEssayId = null;        // 当前查看的主观题ID
 
 // ===================== 专业术语词典 =====================
 const glossary = {
@@ -101,6 +103,7 @@ function initApp() {
   bindPlanEvents();
   bindReviewEvents();
   bindBottomNavEvents();
+  bindEssayEvents();
 }
 
 // ===================== 页面路由 =====================
@@ -108,7 +111,7 @@ function showPage(pageId) {
   // 所有页面ID列表
   const allPages = [
     'page-loading', 'page-login', 'page-home', 'page-quiz',
-    'page-result', 'page-analysis', 'page-wrong', 'page-plan', 'page-review'
+    'page-result', 'page-analysis', 'page-wrong', 'page-plan', 'page-review', 'page-essay'
   ];
 
   // 隐藏所有页面
@@ -141,6 +144,7 @@ function showPage(pageId) {
   if (pageId === 'page-review') updateReview();
   if (pageId === 'page-wrong') updateWrongPage();
   if (pageId === 'page-analysis') updateAnalysis();
+  if (pageId === 'page-essay') updateEssayList();
 }
 
 // ===================== 底部导航 =====================
@@ -383,6 +387,11 @@ function bindHomeEvents() {
 
   // 开始刷题
   document.getElementById('btn-start-quiz').addEventListener('click', startQuiz);
+
+  // 跳转主观题页面
+  document.getElementById('btn-go-essay').addEventListener('click', () => {
+    showPage('page-essay');
+  });
 
   // 倒计时卡片点击跳转备考页面
   document.getElementById('home-countdown-card').addEventListener('click', () => {
@@ -1548,4 +1557,138 @@ function formatTime(seconds) {
 function formatDate(timestamp) {
   const d = new Date(timestamp);
   return `${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+// ===================== 主观题/作文练习 =====================
+function bindEssayEvents() {
+  // 年份筛选
+  document.querySelectorAll('#essay-filter-bar .filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#essay-filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      essayFilter = btn.dataset.year;
+      updateEssayList();
+    });
+  });
+
+  // 返回列表
+  document.getElementById('btn-essay-back').addEventListener('click', () => {
+    document.getElementById('essay-list-view').classList.remove('hidden');
+    document.getElementById('essay-detail-view').classList.add('hidden');
+    currentEssayId = null;
+  });
+
+  // 范文展开/收起
+  document.getElementById('essay-sample-toggle').addEventListener('click', () => {
+    const box = document.getElementById('essay-sample-box');
+    const icon = document.querySelector('.essay-sample-toggle-icon');
+    box.classList.toggle('show');
+    icon.classList.toggle('open');
+  });
+
+  // 保存草稿
+  document.getElementById('btn-essay-save').addEventListener('click', () => {
+    if (!currentEssayId) return;
+    const text = document.getElementById('essay-write-area').value;
+    const drafts = JSON.parse(localStorage.getItem(`${getUserPrefix()}_essay_drafts`) || '{}');
+    drafts[currentEssayId] = { text, time: Date.now() };
+    localStorage.setItem(`${getUserPrefix()}_essay_drafts`, JSON.stringify(drafts));
+    alert('草稿已保存！');
+  });
+
+  // 清空
+  document.getElementById('btn-essay-clear').addEventListener('click', () => {
+    if (confirm('确定要清空已写的内容吗？')) {
+      document.getElementById('essay-write-area').value = '';
+      updateEssayWordCount();
+    }
+  });
+
+  // 字数统计
+  document.getElementById('essay-write-area').addEventListener('input', updateEssayWordCount);
+}
+
+function updateEssayWordCount() {
+  const text = document.getElementById('essay-write-area').value;
+  const count = text.replace(/\s/g, '').length;
+  const el = document.getElementById('essay-word-count');
+  el.textContent = `已写 ${count} 字`;
+  el.classList.toggle('over', count > 1200);
+}
+
+function updateEssayList() {
+  const listEl = document.getElementById('essay-list');
+  let questions = essayQuestions;
+
+  if (essayFilter !== 'all') {
+    questions = questions.filter(q => q.year === essayFilter);
+  }
+
+  if (questions.length === 0) {
+    listEl.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">暂无题目</p>';
+    return;
+  }
+
+  let html = '';
+  questions.forEach(q => {
+    html += `<div class="essay-list-item" data-eid="${q.id}">
+      <div class="essay-list-title">
+        <span class="essay-list-year">${q.year}</span>
+        ${q.title}
+      </div>
+      <span class="essay-list-theme">${q.theme}</span>
+      <div class="essay-list-meta">${q.wordCount} · ${q.score}分</div>
+    </div>`;
+  });
+  listEl.innerHTML = html;
+
+  // 绑定点击事件
+  listEl.querySelectorAll('.essay-list-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const eid = parseInt(item.dataset.eid);
+      openEssayDetail(eid);
+    });
+  });
+}
+
+function openEssayDetail(eid) {
+  const q = essayQuestions.find(e => e.id === eid);
+  if (!q) return;
+
+  currentEssayId = eid;
+
+  // 切换视图
+  document.getElementById('essay-list-view').classList.add('hidden');
+  document.getElementById('essay-detail-view').classList.remove('hidden');
+
+  // 填充内容
+  document.getElementById('essay-detail-year-tag').textContent = q.year;
+  document.getElementById('essay-detail-title').textContent = q.title;
+  document.getElementById('essay-detail-material').textContent = q.material;
+  document.getElementById('essay-detail-requirement').innerHTML = `<strong>作答要求：</strong>${q.requirement}`;
+
+  // 范文
+  document.getElementById('essay-sample-title').textContent = q.sampleEssay.title;
+  // 将范文分段
+  const paragraphs = q.sampleEssay.content.split('\n').filter(p => p.trim());
+  document.getElementById('essay-sample-content').innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+
+  // 收起范文
+  document.getElementById('essay-sample-box').classList.remove('show');
+  document.querySelector('.essay-sample-toggle-icon').classList.remove('open');
+
+  // 写作要点
+  document.getElementById('essay-tips-list').innerHTML = q.writingTips.map(t => `<li>${t}</li>`).join('');
+
+  // 金句
+  document.getElementById('essay-quotes-list').innerHTML = q.keyQuotes.map(q => `<li>${q}</li>`).join('');
+
+  // 恢复草稿
+  const drafts = JSON.parse(localStorage.getItem(`${getUserPrefix()}_essay_drafts`) || '{}');
+  const draft = drafts[eid];
+  document.getElementById('essay-write-area').value = draft ? draft.text : '';
+  updateEssayWordCount();
+
+  // 滚动到顶部
+  window.scrollTo(0, 0);
 }
