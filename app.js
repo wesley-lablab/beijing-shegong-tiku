@@ -985,7 +985,7 @@ function renderResultAnswers() {
         // 为按钮生成临时唯一ID
         const tmpId = 'tts-exp-btn-' + idx;
         btn.id = tmpId;
-        playTTS(q.explanation, tmpId);
+        tts.play(q.explanation, tmpId);
       }
     });
   });
@@ -1191,7 +1191,7 @@ function updateAnalysis() {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const text = decodeURIComponent(btn.dataset.ttsText);
-          playTTS(text, null);
+          tts.play(text, null);
         });
       });
     } else {
@@ -2102,7 +2102,7 @@ function openEssayDetail(eid) {
   if (sampleBtn) {
     sampleBtn.onclick = () => {
       const sampleText = q.sampleEssay.title + '。' + q.sampleEssay.content;
-      playTTS(sampleText, 'tts-sample-btn');
+      tts.play(sampleText, 'tts-sample-btn');
     };
   }
 
@@ -2110,7 +2110,7 @@ function openEssayDetail(eid) {
   if (outlineBtn && q.writingMethod) {
     outlineBtn.onclick = () => {
       const outlineText = q.writingMethod.outline;
-      playTTS(outlineText, 'tts-outline-btn');
+      tts.play(outlineText, 'tts-outline-btn');
     };
   }
 
@@ -2143,186 +2143,6 @@ function openEssayDetail(eid) {
   window.scrollTo(0, 0);
 }
 
-// ===================== 语音播放功能 (TTS) =====================
-let currentTTS = null;
-let ttsAudio = null;
-let currentTTSBtnId = null;
-
-async function playTTS(text, btnId) {
-  // 浏览器语音能力检测
-  const hasSpeech = window.speechSynthesis && window.SpeechSynthesisUtterance;
-  const hasAudio = typeof Audio !== 'undefined';
-
-  if (!hasSpeech && !hasAudio) {
-    showToast('您的浏览器不支持语音播放功能');
-    return;
-  }
-
-  // 如果当前正在播放
-  if (ttsAudio && !ttsAudio.paused) {
-    ttsAudio.pause();
-    ttsAudio.currentTime = 0;
-    // 重置之前播放的按钮状态
-    if (currentTTSBtnId) updateTTSButton(currentTTSBtnId, false);
-    // 如果点击的是同一个按钮，只停止不重新播放
-    if (currentTTSBtnId === btnId) {
-      currentTTSBtnId = null;
-      return;
-    }
-  }
-
-  currentTTSBtnId = btnId;
-
-  // 截取文本（FreeTTS免费版限制1000字符）
-  const ttsText = text.length > 900 ? text.substring(0, 900) + '...' : text;
-
-  if (btnId) updateTTSButton(btnId, true);
-
-  try {
-    const res = await fetch('https://freetts.org/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: ttsText,
-        voice: 'zh-CN-XiaoxiaoNeural',
-        rate: '+10%',
-        pitch: '+0Hz'
-      })
-    });
-
-    if (!res.ok) throw new Error('TTS请求失败');
-
-    const data = await res.json();
-    const fileId = data.file_id;
-
-    // 下载音频
-    const audioRes = await fetch(`https://freetts.org/api/audio/${fileId}`);
-    if (!audioRes.ok) throw new Error('音频下载失败');
-
-    // 释放旧的音频资源
-    if (ttsAudio && ttsAudio.src) {
-      URL.revokeObjectURL(ttsAudio.src);
-      ttsAudio.onended = null;
-      ttsAudio.onerror = null;
-    }
-
-    const blob = await audioRes.blob();
-    const url = URL.createObjectURL(blob);
-
-    ttsAudio = new Audio(url);
-    ttsAudio.onended = () => {
-      updateTTSButton(btnId, false);
-      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-      URL.revokeObjectURL(url);
-    };
-    ttsAudio.onerror = () => {
-      updateTTSButton(btnId, false);
-      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-      URL.revokeObjectURL(url);
-      // 音频播放失败，尝试降级到浏览器内置语音
-      fallbackTTS(ttsText, btnId);
-    };
-
-    ttsAudio.play();
-
-  } catch (err) {
-    console.error('TTS错误:', err);
-    updateTTSButton(btnId, false);
-    if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-    // 降级到浏览器内置语音
-    showToast('在线语音服务暂不可用，尝试使用浏览器内置语音...');
-    fallbackTTS(ttsText, btnId);
-  }
-}
-
-function fallbackTTS(text, btnId) {
-  // 更严格的浏览器语音支持检测
-  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-    showToast('您的浏览器不支持语音播放（请使用Chrome、Edge、Safari等现代浏览器）');
-    return;
-  }
-
-  // 某些浏览器（如微信内置浏览器）speechSynthesis对象存在但speak方法不可用
-  if (typeof window.speechSynthesis.speak !== 'function') {
-    showToast('当前环境不支持语音播放');
-    return;
-  }
-
-  try {
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-CN';
-    utterance.rate = 1.1;
-    utterance.pitch = 1;
-
-    // 处理语音列表异步加载
-    function setVoiceAndSpeak() {
-      try {
-        const voices = window.speechSynthesis.getVoices();
-        const zhVoice = voices.find(v => v.lang && (v.lang.includes('zh') || v.lang.includes('cmn')));
-        if (zhVoice) utterance.voice = zhVoice;
-        window.speechSynthesis.speak(utterance);
-      } catch (e) {
-        console.error('语音播放错误:', e);
-        updateTTSButton(btnId, false);
-        if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-        showToast('语音播放失败，请尝试刷新页面');
-      }
-    }
-
-    let voices = window.speechSynthesis.getVoices();
-    if (voices.length === 0) {
-      // 等待语音列表加载
-      const voicesHandler = () => {
-        setVoiceAndSpeak();
-        window.speechSynthesis.onvoiceschanged = null;
-      };
-      window.speechSynthesis.onvoiceschanged = voicesHandler;
-      // 超时处理：如果2秒内语音列表没加载，直接播放
-      setTimeout(() => {
-        window.speechSynthesis.onvoiceschanged = null;
-        setVoiceAndSpeak();
-      }, 2000);
-    } else {
-      setVoiceAndSpeak();
-    }
-
-    utterance.onend = () => {
-      updateTTSButton(btnId, false);
-      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-    };
-    utterance.onerror = (e) => {
-      console.error('SpeechSynthesis error:', e);
-      updateTTSButton(btnId, false);
-      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-      showToast('语音播放失败，请检查浏览器设置');
-    };
-  } catch (e) {
-    console.error('fallbackTTS错误:', e);
-    updateTTSButton(btnId, false);
-    if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-    showToast('语音播放失败');
-  }
-}
-
-function updateTTSButton(btnId, isPlaying) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  const icon = btn.querySelector('.tts-icon');
-  const text = btn.querySelector('.tts-text');
-
-  if (isPlaying) {
-    btn.classList.add('playing');
-    if (icon) icon.textContent = '⏹';
-    if (text) text.textContent = '停止';
-  } else {
-    btn.classList.remove('playing');
-    if (icon) icon.textContent = '🔊';
-    if (text) text.textContent = btn.dataset.type === 'sample' ? '朗读范文' :
-                                btn.dataset.type === 'outline' ? '朗读提纲' : '朗读解析';
-  }
-}
 
 // ===================== 万能金句库 =====================
 let currentGQTab = 'openings';
