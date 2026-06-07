@@ -1882,6 +1882,14 @@ function bindEssayEvents() {
     icon.classList.toggle('open');
   });
 
+  // 写作方法提纲展开/收起
+  document.getElementById('writing-method-outline-toggle').addEventListener('click', () => {
+    const box = document.getElementById('writing-method-outline-box');
+    const icon = document.querySelector('.writing-method-outline-icon');
+    box.classList.toggle('show');
+    icon.classList.toggle('open');
+  });
+
   // 保存草稿
   document.getElementById('btn-essay-save').addEventListener('click', () => {
     if (!currentEssayId) return;
@@ -1978,6 +1986,22 @@ function openEssayDetail(eid) {
 
   // 金句
   document.getElementById('essay-quotes-list').innerHTML = q.keyQuotes.map(q => `<li>${q}</li>`).join('');
+
+  // 写作方法与提纲
+  if (q.writingMethod) {
+    const stepsHtml = q.writingMethod.steps.map(s => `
+      <div class="writing-method-step">
+        <div class="writing-method-step-num">${s.step}</div>
+        <span class="writing-method-step-name">${s.name}</span>
+        <span class="writing-method-step-desc">${s.desc}</span>
+      </div>
+    `).join('');
+    document.getElementById('writing-method-steps').innerHTML = stepsHtml;
+    document.getElementById('writing-method-outline-content').textContent = q.writingMethod.outline;
+    // 收起提纲
+    document.getElementById('writing-method-outline-box').classList.remove('show');
+    document.querySelector('.writing-method-outline-icon').classList.remove('open');
+  }
 
   // 恢复草稿
   const drafts = JSON.parse(localStorage.getItem(`${getUserPrefix()}_essay_drafts`) || '{}');

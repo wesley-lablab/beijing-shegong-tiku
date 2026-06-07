@@ -677,6 +677,43 @@ header p { opacity: 0.92; font-size: 0.85em; }
   content: "💡"; position: absolute; left: 0; top: 4px; font-size: 0.9em;
 }
 
+/* 写作方法与提纲 */
+.writing-method-box {
+  margin-top: 12px; padding: 14px; background: #fff3e0; border-radius: 12px;
+  border-left: 4px solid #e65100;
+}
+.writing-method-title { font-weight: 700; font-size: 0.88em; color: #e65100; margin-bottom: 10px; }
+.writing-method-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.writing-method-step {
+  flex: 1; min-width: 100px; background: white; border-radius: 10px; padding: 8px 10px;
+  text-align: center; border: 1px solid #ffe0b2;
+}
+.writing-method-step-num {
+  display: inline-block; width: 22px; height: 22px; line-height: 22px;
+  background: #e65100; color: white; border-radius: 50%; font-size: 0.72em;
+  font-weight: 700; margin-bottom: 4px;
+}
+.writing-method-step-name { font-size: 0.78em; font-weight: 700; color: #bf360c; display: block; margin-top: 2px; }
+.writing-method-step-desc { font-size: 0.7em; color: #888; margin-top: 2px; display: block; }
+.writing-method-outline-toggle {
+  display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+  background: white; border-radius: 10px; cursor: pointer;
+  font-size: 0.82em; font-weight: 600; color: #e65100;
+  border: 1px solid #ffe0b2; transition: all 0.15s;
+}
+.writing-method-outline-toggle:active { background: #fff8e1; }
+.writing-method-outline-icon { transition: transform 0.2s; font-size: 0.8em; }
+.writing-method-outline-icon.open { transform: rotate(180deg); }
+.writing-method-outline-box {
+  max-height: 0; overflow: hidden; transition: max-height 0.3s;
+}
+.writing-method-outline-box.show { max-height: 600px; }
+.writing-method-outline-content {
+  margin-top: 10px; padding: 12px; background: white; border-radius: 10px;
+  font-size: 0.82em; color: #444; line-height: 1.8; white-space: pre-line;
+  border: 1px solid #ffe0b2;
+}
+
 .essay-quotes-box {
   margin-top: 12px; padding: 14px; background: #fce8e6; border-radius: 12px;
   border-left: 4px solid #ea4335;
@@ -1245,6 +1282,19 @@ header p { opacity: 0.92; font-size: 0.85em; }
         <div class="essay-tips-box">
           <div class="essay-tips-title">📝 写作要点</div>
           <ul class="essay-tips-list" id="essay-tips-list"></ul>
+        </div>
+      </div>
+      <div class="card essay-detail-card">
+        <div class="writing-method-box">
+          <div class="writing-method-title">✍️ 写作方法与提纲</div>
+          <div class="writing-method-steps" id="writing-method-steps"></div>
+          <div class="writing-method-outline-toggle" id="writing-method-outline-toggle">
+            <span class="writing-method-outline-icon">&#9660;</span>
+            📋 查看本题写作提纲
+          </div>
+          <div class="writing-method-outline-box" id="writing-method-outline-box">
+            <div class="writing-method-outline-content" id="writing-method-outline-content"></div>
+          </div>
         </div>
       </div>
       <div class="card essay-detail-card">
