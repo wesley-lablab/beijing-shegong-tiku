@@ -1154,7 +1154,7 @@ function updateAnalysis() {
         
         // 知识提纲语音
         if (outlineText) {
-          const safeText = outlineText.substring(0, 200);
+          const safeText = outlineText.substring(0, 900);
           resourceHtml += `
             <div class="review-resource-item">
               <div class="review-resource-icon">📖</div>
@@ -2145,21 +2145,23 @@ function openEssayDetail(eid) {
 // ===================== 语音播放功能 (TTS) =====================
 let currentTTS = null;
 let ttsAudio = null;
+let currentTTSBtnId = null;
 
 async function playTTS(text, btnId) {
-  // 停止之前的播放
+  // 如果当前正在播放
   if (ttsAudio && !ttsAudio.paused) {
     ttsAudio.pause();
     ttsAudio.currentTime = 0;
-    if (btnId) updateTTSButton(btnId, false);
+    // 重置之前播放的按钮状态
+    if (currentTTSBtnId) updateTTSButton(currentTTSBtnId, false);
+    // 如果点击的是同一个按钮，只停止不重新播放
+    if (currentTTSBtnId === btnId) {
+      currentTTSBtnId = null;
+      return;
+    }
   }
 
-  const btn = btnId ? document.getElementById(btnId) : null;
-
-  // 如果正在播放且有按钮，则停止（已在上方处理）
-  if (btn) {
-    // 按钮模式：点击切换播放/停止
-  }
+  currentTTSBtnId = btnId;
 
   // 截取文本（FreeTTS免费版限制1000字符）
   const ttsText = text.length > 900 ? text.substring(0, 900) + '...' : text;
@@ -2187,16 +2189,25 @@ async function playTTS(text, btnId) {
     const audioRes = await fetch(`https://freetts.org/api/audio/${fileId}`);
     if (!audioRes.ok) throw new Error('音频下载失败');
 
+    // 释放旧的音频资源
+    if (ttsAudio && ttsAudio.src) {
+      URL.revokeObjectURL(ttsAudio.src);
+      ttsAudio.onended = null;
+      ttsAudio.onerror = null;
+    }
+
     const blob = await audioRes.blob();
     const url = URL.createObjectURL(blob);
 
     ttsAudio = new Audio(url);
     ttsAudio.onended = () => {
       updateTTSButton(btnId, false);
+      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
       URL.revokeObjectURL(url);
     };
     ttsAudio.onerror = () => {
       updateTTSButton(btnId, false);
+      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
       URL.revokeObjectURL(url);
       showToast('语音播放失败，请重试');
     };
@@ -2206,6 +2217,7 @@ async function playTTS(text, btnId) {
   } catch (err) {
     console.error('TTS错误:', err);
     updateTTSButton(btnId, false);
+    if (currentTTSBtnId === btnId) currentTTSBtnId = null;
     // 降级到浏览器内置语音
     fallbackTTS(ttsText, btnId);
   }
@@ -2217,7 +2229,6 @@ function fallbackTTS(text, btnId) {
     return;
   }
 
-  // 停止之前的
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
@@ -2225,18 +2236,34 @@ function fallbackTTS(text, btnId) {
   utterance.rate = 1.1;
   utterance.pitch = 1;
 
-  // 尝试找到中文语音
-  const voices = window.speechSynthesis.getVoices();
-  const zhVoice = voices.find(v => v.lang.includes('zh') || v.lang.includes('cmn'));
-  if (zhVoice) utterance.voice = zhVoice;
+  // 处理语音列表异步加载
+  function setVoiceAndSpeak() {
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang && (v.lang.includes('zh') || v.lang.includes('cmn')));
+    if (zhVoice) utterance.voice = zhVoice;
+    window.speechSynthesis.speak(utterance);
+  }
 
-  utterance.onend = () => updateTTSButton(btnId, false);
+  let voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) {
+    // 等待语音列表加载
+    window.speechSynthesis.onvoiceschanged = () => {
+      setVoiceAndSpeak();
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  } else {
+    setVoiceAndSpeak();
+  }
+
+  utterance.onend = () => {
+    updateTTSButton(btnId, false);
+    if (currentTTSBtnId === btnId) currentTTSBtnId = null;
+  };
   utterance.onerror = () => {
     updateTTSButton(btnId, false);
+    if (currentTTSBtnId === btnId) currentTTSBtnId = null;
     showToast('语音播放失败');
   };
-
-  window.speechSynthesis.speak(utterance);
 }
 
 function updateTTSButton(btnId, isPlaying) {
@@ -2333,4 +2360,18 @@ function bindGoldenQuotesEvents() {
       renderGoldenQuotes(tab.dataset.tab);
     });
   });
+}
+
+// ===================== Toast提示 =====================
+function showToast(message) {
+  let toast = document.getElementById('app-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'app-toast';
+    toast.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85em;z-index:9999;transition:opacity 0.3s;opacity:0;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 2500);
 }
