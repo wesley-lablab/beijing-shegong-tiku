@@ -7,12 +7,60 @@ let currentQuestions = [];        // 当前刷题的题目列表
 let currentIndex = 0;            // 当前题目索引
 let userAnswers = {};             // 本轮用户答案 {questionId: answer}
 let quizMode = 'all';             // 刷题模式：all / subject / wrong / review
-let selectedSubjects = ['社工专业知识', '社区工作知识', '行测', '公共基础知识'];
+let selectedSubjects = ['社区工作专业知识', '社会建设知识', '党务知识', '公共管理', '时事政治', '法律基础', '西城区情'];
 let questionCount = 20;          // 题目数量
 let quizStartTime = 0;            // 刷题开始时间
 let timerInterval = null;         // 计时器引用
 let wrongFilter = 'all';         // 错题本筛选：all / high-freq
 let reviewFilter = 'all';        // 复习阶段筛选：all / 1 / 2 / 4 / 7 / 15 / 30
+
+// ===================== 专业术语词典 =====================
+const glossary = {
+  '接诉即办': '北京市党建引领基层治理的创新机制，指快速响应市民通过12345热线等渠道反映的诉求，及时办理和反馈，做到“民有所呼、我有所应”。',
+  '12345市民服务热线': '北京市统一的政府服务热线，市民可通过电话、网络等渠道反映诉求。社区工作者需对接收的工单进行处理、核实、协调解决和反馈结果。',
+  '未诉先办': '在居民提出诉求之前主动发现问题并解决，是“接诉即办”的深化延伸，强调源头治理。',
+  '吹哨报到': '街道乡镇遇到自身无法解决的难题时，可“吹哨”召集相关职能部门前来“报到”共同解决，是北京基层治理的重要机制。',
+  '网格化管理': '将社区划分为若干网格单元，配备网格员，实现精细化管理，及时发现和解决问题。',
+  '居民委员会': '居民自我管理、自我教育、自我服务的基层群众性自治组织，不是政府机关。成员由居民直接选举产生，每届任期五年。',
+  '四议两公开': '党支部会提议、“两委”会商议、党员大会审议、居民代表会议或居民会议决议；决议公开、实施结果公开。',
+  '居民会议': '居民自治的最高决策机构，至少每季度召开一次，讨论决定涉及全体居民利益的重要事项。',
+  '街道办事处': '不设区的市、市辖区人民政府的派出机关，与居委会之间是指与被指导的关系，不是领导关系。',
+  '业主大会': '由物业管理区域内全体业主组成的自治组织，代表和维护全体业主在物业管理活动中的合法权益。',
+  '业主委员会': '由业主大会选举产生，代表业主行使共同管理权的组织，负责签订物业服务合同、监督物业企业等。',
+  '红墙意识': '西城区特有的政治概念，指以绝对忠诚、责任担当、首善标准为核心内涵的政治意识和行动自觉。“红墙”特指中南海红墙，寓意服务中央的政治责任。',
+  '七有': '幼有所育、学有所教、劳有所得、病有所医、老有所养、住有所居、弱有所扶，是北京市“接诉即办”工作的重要评价标准。',
+  '五性': '便利性、宜居性、多样性、公正性、安全性，是评价社区治理成效的重要维度。',
+  '接纳': '社会工作者在服务过程中对服务对象采取非评判的态度，接受服务对象的独特性，尊重其个人尊严和权利。',
+  '个别化': '认识到每位服务对象都是独特的个体，具有不同的需求、背景和特点，应根据其具体情况提供有针对性的服务。',
+  '自决': '社会工作者尊重服务对象自己做决定的权利和需要，鼓励和协助服务对象参与决策过程。',
+  '保密': '社会工作者对服务对象的信息予以保密，但涉及生命安全等例外情况时可突破保密原则。',
+  '同理心': '社会工作者设身处地地体会服务对象的感受和处境，理解其内心世界，并将这种理解传达给服务对象。',
+  '个案工作': '以个人或家庭为对象，通过一对一的直接互动，运用专业知识和技巧帮助服务对象解决问题的一种社会工作方法。',
+  '小组工作': '通过组织和引导小组成员之间的互动，利用小组动力帮助成员解决问题、促进成长的社工方法，发展阶段包括形成期、风暴期、规范期、成熟期、结束期。',
+  '社区工作': '以社区为对象的社会工作方法，包括地区发展模式、社会策划模式、社区照顾模式和社会行动模式四种主要模式。',
+  '赋权': '帮助服务对象增强自身能力、提升自我意识，认识自身的权利和力量，掌握对自己生活的控制权。',
+  '社区治理': '多元主体（政府、社区组织、社会组织、居民等）共同参与，通过协商合作实现共建共治共享的治理格局。',
+  '党建引领': '发挥党组织的领导核心作用，通过政治引领、组织引领、机制引领，凝聚各方力量共同参与社区治理。',
+  '地区发展模式': '促进社区居民的广泛参与和互助，挖掘社区内部资源，通过居民自身的努力实现社区的改善和发展。',
+  '社区照顾模式': '在社区内为有需要的老年人、残疾人等提供照顾和支持，使其能在熟悉的社区环境中生活。',
+  '大党委制': '社区党组织与辖区单位党组织共建，吸纳辖区单位党组织负责人担任兼职委员，形成区域化党建格局。',
+  '三社联动': '社区、社会组织、社会工作专业人才联动，通过资源整合和优势互补提升社区服务专业化水平。',
+  '五社联动': '社区、社会组织、社工、社区志愿者、社会慈善资源联动，是“三社联动”的拓展和深化。',
+  '枫桥经验': '依靠群众，就地化解矛盾，实现小事不出村、大事不出镇、矛盾不上交。',
+  '民法典': '2021年1月1日起施行的新中国第一部以法典命名的法律，包含物权、合同、人格权、婚姻家庭、继承、侵权责任等七编。',
+  '社区党组织': '党在社区的基层组织，发挥领导核心作用，引领社区治理和服务方向，不直接管理社区日常事务。',
+  '党群服务中心': '党组织联系服务群众的重要阵地，为党员和群众提供党务、政务、便民、文化等综合服务。',
+  '社区营造': '居民参与、共同创造社区生活，发掘社区特色，增强认同感和凝聚力。',
+  '智慧社区': '利用物联网、云计算、大数据等信息技术提升社区治理和服务水平的新型社区形态。',
+  '驿站式养老': '北京市推行的社区养老服务模式，在社区设立服务驿站，提供日间照料、助餐、助浴、健康指导等服务。',
+  '事实无人抚养儿童': '父母双方不能或不能完全履行抚养职责的儿童，如父母重病、服刑、失踪等情形的儿童。',
+  '接诉即办条例': '《北京市接诉即办工作条例》，明确承办单位应在接到诉求后2小时内响应，考核重点是响应率、解决率、满意率。',
+  '每月一题': '接诉即办创新举措，每月选取群众反映强烈的共性难点问题集中攻坚解决，推动从解决一件事到解决一类事。',
+  '主动治理': '社区工作者主动排查辖区内问题隐患，从源头治理，减少问题产生和诉求数量。',
+  '议事协商': '通过平等对话、理性沟通、协商共识的方式解决社区公共事务和矛盾纠纷。',
+};
+// 术语正则匹配列表（按长度降序排列，优先匹配长词）
+const glossaryTerms = Object.keys(glossary).sort((a, b) => b.length - a.length);
 
 // ===================== 初始化 =====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -535,39 +583,61 @@ function renderQuestion() {
   const container = document.getElementById('quiz-question-container');
   const total = currentQuestions.length;
   const progress = ((currentIndex + 1) / total) * 100;
+  const isTrueFalse = q.type === 'truefalse';
 
   // 更新进度
-  document.getElementById('quiz-progress-text').textContent = `第 ${currentIndex + 1} / ${total} 题`;
+  document.getElementById('quiz-progress-text').textContent = `第 ${currentIndex + 1} / ${total} 题${isTrueFalse ? ' [判断题]' : ''}`;
   document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
 
   // 检查当前题是否已作答
   const userAnswer = userAnswers[q.id];
   const hasAnswered = userAnswer !== undefined;
 
-  // 生成选项HTML（统一看答案模式：做题过程中不显示对错）
+  // 为题干中的专有名词添加标注
+  const highlightedQuestion = highlightTerms(q.question);
+
+  // 生成选项HTML
   let optionsHtml = '';
-  q.options.forEach(opt => {
-    const letter = opt.charAt(0);
-    let cls = 'option';
-    if (hasAnswered && userAnswer === letter) {
-      cls += ' selected';
-    }
-    optionsHtml += `<div class="${cls}" data-letter="${letter}">
-      <div class="option-letter">${letter}</div>
-      <div class="option-text">${opt.substring(3)}</div>
-    </div>`;
-  });
+  if (isTrueFalse) {
+    // 判断题：只显示对/错
+    ['对', '错'].forEach(letter => {
+      let cls = 'option';
+      if (hasAnswered && userAnswer === letter) cls += ' selected';
+      optionsHtml += `<div class="${cls}" data-letter="${letter}">
+        <div class="option-letter">${letter === '对' ? '✓' : '✗'}</div>
+        <div class="option-text">${letter}</div>
+      </div>`;
+    });
+  } else {
+    q.options.forEach(opt => {
+      const letter = opt.charAt(0);
+      let cls = 'option';
+      if (hasAnswered && userAnswer === letter) cls += ' selected';
+      optionsHtml += `<div class="${cls}" data-letter="${letter}">
+        <div class="option-letter">${letter}</div>
+        <div class="option-text">${opt.substring(3)}</div>
+      </div>`;
+    });
+  }
 
   container.innerHTML = `
     <div class="question-card">
       <div class="question-header">
         <span class="question-num">#${q.id}</span>
-        <span class="question-subject">${q.subject} · ${q.category}</span>
+        <span class="question-subject">${q.subject} · ${q.category}${isTrueFalse ? ' · 判断题' : ''}</span>
       </div>
-      <div class="question-text">${q.question}</div>
+      <div class="question-text">${highlightedQuestion}</div>
       <div class="options">${optionsHtml}</div>
     </div>
   `;
+
+  // 绑定术语点击事件
+  container.querySelectorAll('.glossary-term').forEach(term => {
+    term.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showGlossaryPopup(term.dataset.term, term);
+    });
+  });
 
   // 绑定选项点击事件（未作答时才可点击）
   if (!hasAnswered) {
@@ -580,16 +650,61 @@ function renderQuestion() {
 
   // 更新按钮状态
   document.getElementById('btn-prev').disabled = currentIndex === 0;
-  // 统一看答案模式：隐藏查看答案按钮，只显示下一题
   document.getElementById('btn-check').classList.add('hidden');
   document.getElementById('btn-next').classList.remove('hidden');
 
-  // 最后一题时改变按钮文字
   if (currentIndex === currentQuestions.length - 1) {
     document.getElementById('btn-next').textContent = '查看结果';
   } else {
     document.getElementById('btn-next').textContent = '下一题';
   }
+}
+
+// 高亮标注题干中的专业术语
+function highlightTerms(text) {
+  let result = text;
+  glossaryTerms.forEach(term => {
+    if (text.includes(term)) {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escaped})`, 'g');
+      result = result.replace(regex, '<span class="glossary-term" data-term="$1">$1</span>');
+    }
+  });
+  return result;
+}
+
+// 显示术语解释弹窗
+function showGlossaryPopup(term, anchorEl) {
+  // 移除已有弹窗
+  const existing = document.querySelector('.glossary-popup');
+  if (existing) existing.remove();
+
+  const def = glossary[term];
+  if (!def) return;
+
+  const popup = document.createElement('div');
+  popup.className = 'glossary-popup';
+  popup.innerHTML = `<div class="glossary-popup-title">${term}</div><div class="glossary-popup-text">${def}</div>`;
+  popup.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popup.remove();
+  });
+  document.body.appendChild(popup);
+
+  // 定位弹窗
+  const rect = anchorEl.getBoundingClientRect();
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - 290));
+  const top = rect.bottom + 8;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+
+  // 点击其他地方关闭
+  setTimeout(() => {
+    document.addEventListener('click', function closeFn() {
+      popup.remove();
+      document.removeEventListener('click', closeFn);
+    }, { once: true });
+  }, 100);
 }
 
 function selectOption(letter) {
@@ -733,7 +848,7 @@ function endQuiz() {
   showPage('page-result');
 }
 
-// ===================== 结果页面 - 逐题折叠展示 =====================
+// ===================== 结果页面 - 逐题折叠展示（含完整选项） =====================
 function renderResultAnswers() {
   const listEl = document.getElementById('result-answers-list');
   let html = '';
@@ -743,23 +858,72 @@ function renderResultAnswers() {
     const isCorrect = userAnswer === q.answer;
     const statusClass = isCorrect ? 'correct' : 'wrong';
     const statusText = isCorrect ? '正确' : '错误';
+    const isTrueFalse = q.type === 'truefalse';
+
+    // 生成选项展示HTML
+    let optionsDisplayHtml = '';
+    if (isTrueFalse) {
+      // 判断题：显示"对"和"错"
+      ['对', '错'].forEach(letter => {
+        let cls = 'result-option-mini';
+        if (userAnswer === letter && isCorrect) {
+          cls += ' user-correct';
+        } else if (userAnswer === letter && !isCorrect) {
+          cls += ' user-wrong';
+        } else if (q.answer === letter && !isCorrect) {
+          cls += ' correct-answer';
+        }
+        const icon = letter === '对' ? '✓' : '✗';
+        optionsDisplayHtml += `<div class="${cls}">
+          <div class="result-option-letter-mini">${icon}</div>
+          <div class="result-option-text-mini">${letter}</div>
+        </div>`;
+      });
+    } else {
+      // 单选题：显示所有选项
+      q.options.forEach(opt => {
+        const letter = opt.charAt(0);
+        let cls = 'result-option-mini';
+        if (userAnswer === letter && isCorrect) {
+          cls += ' user-correct';
+        } else if (userAnswer === letter && !isCorrect) {
+          cls += ' user-wrong';
+        } else if (q.answer === letter && !isCorrect) {
+          cls += ' correct-answer';
+        }
+        optionsDisplayHtml += `<div class="${cls}">
+          <div class="result-option-letter-mini">${letter}</div>
+          <div class="result-option-text-mini">${opt.substring(3)}</div>
+        </div>`;
+      });
+    }
+
+    // 用户答案显示
+    let answerInfoHtml = '';
+    if (userAnswer === undefined) {
+      answerInfoHtml = '<div class="answer-result-wrong">未作答</div>';
+    } else if (isCorrect) {
+      answerInfoHtml = '<div class="answer-result-correct">✓ 回答正确！</div>';
+    } else {
+      answerInfoHtml = `
+        <div class="answer-result-wrong">✗ 你的选择：${userAnswer}</div>
+        <div class="answer-correct-answer">✓ 正确答案：${q.answer}</div>
+      `;
+    }
 
     html += `
       <div class="answer-collapse" data-idx="${idx}">
         <div class="answer-collapse-header">
           <span>
             <span class="result-question-status ${statusClass}">${statusText}</span>
-            第${idx + 1}题 · ${q.subject}
+            第${idx + 1}题 · ${q.subject} · ${q.category}${isTrueFalse ? ' · 判断' : ''}
           </span>
           <span class="answer-collapse-icon">&#9660;</span>
         </div>
         <div class="answer-collapse-body">
           <div class="result-question-text">${q.question}</div>
-          ${isCorrect
-            ? `<div class="answer-result-correct">回答正确！</div>`
-            : `<div class="answer-result-wrong">你的答案：${userAnswer || '未作答'}</div>
-               <div class="answer-correct-answer">正确答案：${q.answer}</div>`
-          }
+          <div class="result-options-display">${optionsDisplayHtml}</div>
+          ${answerInfoHtml}
           <div class="answer-explanation">${q.explanation}</div>
         </div>
       </div>
@@ -926,6 +1090,7 @@ function bindWrongEvents() {
 
 function updateWrongPage() {
   const wrongMap = getWrongIds();
+  const history = getHistory();
   const wrongList = document.getElementById('wrong-list');
 
   // 获取错题ID列表
@@ -947,16 +1112,44 @@ function updateWrongPage() {
   let html = '';
   wrongIds.forEach(id => {
     const q = allQuestions.find(q => q.id === id);
-    if (q) {
-      const isHighFreq = wrongMap[id] && wrongMap[id].count >= 3;
-      const freqClass = isHighFreq ? ' high-freq' : '';
-      const wrongCount = wrongMap[id] ? wrongMap[id].count : 1;
-      html += `<div class="wrong-book-item${freqClass}" data-qid="${id}">
-        <div class="wrong-book-q">[${q.subject}] ${q.question.substring(0, 45)}...</div>
-        <div class="wrong-book-a">正确答案：${q.answer} · ${q.category}</div>
-        <div class="wrong-book-meta">错误 ${wrongCount} 次</div>
-      </div>`;
+    if (!q) return;
+
+    const isHighFreq = wrongMap[id] && wrongMap[id].count >= 3;
+    const freqClass = isHighFreq ? ' high-freq' : '';
+    const wrongCount = wrongMap[id] ? wrongMap[id].count : 1;
+    const isTrueFalse = q.type === 'truefalse';
+    const lastRecord = history[id];
+
+    // 用户上次选的答案
+    const userLastAnswer = lastRecord ? lastRecord.answer : '?';
+
+    // 生成选项展示
+    let optionsHtml = '';
+    if (isTrueFalse) {
+      ['对', '错'].forEach(letter => {
+        let cls = 'wrong-book-full-option';
+        if (letter === userLastAnswer) cls += ' user-wrong';
+        if (letter === q.answer) cls += ' correct-ans';
+        optionsHtml += `<div class="${cls}">${letter === '对' ? '✓' : '✗'} ${letter}</div>`;
+      });
+    } else if (q.options) {
+      q.options.forEach(opt => {
+        const letter = opt.charAt(0);
+        let cls = 'wrong-book-full-option';
+        if (letter === userLastAnswer) cls += ' user-wrong';
+        if (letter === q.answer) cls += ' correct-ans';
+        optionsHtml += `<div class="${cls}">${letter}. ${opt.substring(3)}</div>`;
+      });
     }
+
+    html += `<div class="wrong-book-item${freqClass}" data-qid="${id}">
+      <div class="wrong-book-full-q">${q.question}</div>
+      <div class="wrong-book-full-options">${optionsHtml}</div>
+      <div class="wrong-book-full-a">
+        你的选择：${userLastAnswer} &nbsp;|&nbsp; 正确答案：${q.answer} &nbsp;|&nbsp; 错误 ${wrongCount} 次
+      </div>
+      <div class="wrong-book-full-exp">${q.explanation.substring(0, 80)}${q.explanation.length > 80 ? '...' : ''}</div>
+    </div>`;
   });
   wrongList.innerHTML = html;
 

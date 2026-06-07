@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1a73e8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>北京社工题库</title>
+<title>西城区社工题库</title>
 <style>
 /* ========== 基础重置 ========== */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -262,6 +262,71 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .answer-correct-answer { font-size: 0.88em; color: #1a73e8; margin-bottom: 4px; }
 .answer-explanation { font-size: 0.85em; color: #666; line-height: 1.6; margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #1a73e8; }
 
+/* 结果页 - 选项展示 */
+.result-options-display { margin: 8px 0; }
+.result-option-mini {
+  padding: 6px 10px; margin: 3px 0; border-radius: 8px; font-size: 0.85em;
+  border: 1px solid #e8eaed; background: #fafafa;
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.result-option-mini.user-wrong {
+  border-color: #ea4335; background: #fce8e6; color: #c62828; font-weight: 600;
+}
+.result-option-mini.user-correct {
+  border-color: #34a853; background: #e6f4ea; color: #1b5e20; font-weight: 600;
+}
+.result-option-mini.correct-answer {
+  border-color: #1a73e8; background: #e8f0fe;
+}
+.result-option-letter-mini {
+  width: 22px; height: 22px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-weight: bold;
+  font-size: 0.8em; flex-shrink: 0; background: #e8eaed; color: #555;
+}
+.result-option-mini.user-wrong .result-option-letter-mini { background: #ea4335; color: white; }
+.result-option-mini.user-correct .result-option-letter-mini { background: #34a853; color: white; }
+.result-option-mini.correct-answer .result-option-letter-mini { background: #1a73e8; color: white; }
+.result-option-text-mini { padding-top: 1px; }
+
+/* 专有名词弹窗 */
+.glossary-term {
+  color: #1a73e8; border-bottom: 1px dashed #1a73e8; cursor: pointer;
+  position: relative; transition: background 0.15s;
+}
+.glossary-term:active { background: #e8f0fe; }
+.glossary-popup {
+  position: fixed; z-index: 9999; max-width: 280px;
+  background: white; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+  padding: 14px 16px; cursor: pointer; animation: popupFadeIn 0.2s;
+  border: 1px solid #e8eaed;
+}
+@keyframes popupFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.glossary-popup-title {
+  font-weight: 700; font-size: 0.95em; color: #1a73e8; margin-bottom: 6px;
+}
+.glossary-popup-text {
+  font-size: 0.82em; color: #555; line-height: 1.6;
+}
+
+/* 错题本 - 完整选项展示 */
+.wrong-book-full-q { font-size: 0.92em; color: #333; margin-bottom: 8px; line-height: 1.6; }
+.wrong-book-full-options { margin-bottom: 8px; }
+.wrong-book-full-option {
+  padding: 4px 8px; margin: 2px 0; border-radius: 6px; font-size: 0.82em;
+  border: 1px solid #e8eaed; background: #fafafa;
+}
+.wrong-book-full-option.user-wrong {
+  border-color: #ea4335; background: #fce8e6; color: #c62828;
+}
+.wrong-book-full-option.correct-ans {
+  border-color: #1a73e8; background: #e8f0fe;
+}
+.wrong-book-full-a { font-size: 0.8em; color: #ea4335; margin-top: 4px; }
+.wrong-book-full-exp { font-size: 0.78em; color: #888; margin-top: 4px; line-height: 1.5; }
+
 /* ========== 结果页面 ========== */
 .result-question-item {
   padding: 14px; border-bottom: 1px solid #eee;
@@ -451,7 +516,7 @@ header p { opacity: 0.92; font-size: 0.85em; }
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"></path>
           </svg>
         </div>
-        <h1>北京社工题库</h1>
+        <h1>西城区社工题库</h1>
         <p>社区工作者招聘考试刷题系统</p>
       </div>
 
@@ -515,8 +580,8 @@ header p { opacity: 0.92; font-size: 0.85em; }
   <!-- ==================== 首页 ==================== -->
   <div id="page-home" class="hidden">
     <header>
-      <h1>北京社区工作者招聘考试题库</h1>
-      <p>近五年高频考点 · 420题全覆盖 · 智能刷题系统</p>
+      <h1>北京市西城区社工考试题库</h1>
+      <p>近五年真题 · 单选+判断 · 7大科目 · 420题</p>
     </header>
 
     <!-- 考试倒计时卡片 -->
@@ -566,21 +631,33 @@ header p { opacity: 0.92; font-size: 0.85em; }
     <div class="card" id="subject-select-card">
       <h2>选择科目（可多选）</h2>
       <div class="subject-grid">
-        <div class="subject-card selected" data-subject="社工专业知识">
-          <h3>社工专业知识</h3>
-          <p>价值观、个案/小组/社区工作、实务</p>
+        <div class="subject-card selected" data-subject="社区工作专业知识">
+          <h3>社区工作专业知识</h3>
+          <p>社区概论、社工方法、实务</p>
         </div>
-        <div class="subject-card selected" data-subject="社区工作知识">
-          <h3>社区工作知识</h3>
-          <p>社区建设、治理、接诉即办、党建</p>
+        <div class="subject-card selected" data-subject="社会建设知识">
+          <h3>社会建设知识</h3>
+          <p>社会治理、接诉即办、基层治理</p>
         </div>
-        <div class="subject-card selected" data-subject="行测">
-          <h3>行测</h3>
-          <p>言语理解、判断推理、数量关系</p>
+        <div class="subject-card selected" data-subject="党务知识">
+          <h3>党务知识</h3>
+          <p>党建、组织建设、党员管理</p>
         </div>
-        <div class="subject-card selected" data-subject="公共基础知识">
-          <h3>公共基础知识</h3>
-          <p>时政、法律、政治理论、市情区情</p>
+        <div class="subject-card selected" data-subject="公共管理">
+          <h3>公共管理</h3>
+          <p>行政法、公共政策、服务管理</p>
+        </div>
+        <div class="subject-card selected" data-subject="时事政治">
+          <h3>时事政治</h3>
+          <p>近期时政热点、重要会议</p>
+        </div>
+        <div class="subject-card selected" data-subject="法律基础">
+          <h3>法律基础</h3>
+          <p>民法典、社区相关法规</p>
+        </div>
+        <div class="subject-card selected" data-subject="西城区情">
+          <h3>西城区情</h3>
+          <p>西城概况、街道、重点工作</p>
         </div>
       </div>
     </div>
