@@ -1152,6 +1152,7 @@ function updateAnalysis() {
         
         // 知识提纲语音
         if (outlineText) {
+          const safeText = outlineText.substring(0, 200);
           resourceHtml += `
             <div class="review-resource-item">
               <div class="review-resource-icon">📖</div>
@@ -1159,7 +1160,7 @@ function updateAnalysis() {
                 <div class="review-resource-title">「${cate}」知识提纲</div>
                 <div class="review-resource-desc">${sub} · 错${count}题 · 点击朗读提纲加深记忆</div>
               </div>
-              <button class="review-resource-action audio" onclick="playTTS('${outlineText.replace(/'/g, "\\'").substring(0, 200)}', null)">
+              <button type="button" class="review-resource-action audio tts-review-btn" data-tts-text="${encodeURIComponent(safeText)}">
                 🔊 朗读
               </button>
             </div>`;
@@ -1181,6 +1182,15 @@ function updateAnalysis() {
       });
       
       resourceList.innerHTML = resourceHtml;
+
+      // 绑定语音朗读按钮事件
+      resourceList.querySelectorAll('.tts-review-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const text = decodeURIComponent(btn.dataset.ttsText);
+          playTTS(text, null);
+        });
+      });
     } else {
       resourceSection.style.display = 'none';
     }
@@ -2142,7 +2152,7 @@ async function playTTS(text, btnId) {
   // 截取文本（FreeTTS免费版限制1000字符）
   const ttsText = text.length > 900 ? text.substring(0, 900) + '...' : text;
 
-  updateTTSButton(btnId, true);
+  if (btnId) updateTTSButton(btnId, true);
 
   try {
     const res = await fetch('https://freetts.org/api/tts', {
