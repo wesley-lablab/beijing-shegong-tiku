@@ -1,6 +1,8 @@
 // ===================== 北京社区工作者招聘考试刷题应用 =====================
 // 完整JavaScript逻辑 - 包含用户系统、刷题、备考、复习、分析等全部功能
 
+const goldenQuotes = require('./golden_quotes');
+
 // ===================== 全局状态 =====================
 let currentUser = null;          // 当前登录用户名，null表示未登录
 let currentQuestions = [];        // 当前刷题的题目列表
@@ -2015,6 +2017,8 @@ function bindEssayEvents() {
 
   // 字数统计
   document.getElementById('essay-write-area').addEventListener('input', updateEssayWordCount);
+
+  bindGoldenQuotesEvents();
 }
 
 function updateEssayWordCount() {
@@ -2124,6 +2128,9 @@ function openEssayDetail(eid) {
     document.getElementById('writing-method-outline-box').classList.remove('show');
     document.querySelector('.writing-method-outline-icon').classList.remove('open');
   }
+
+  // 渲染万能金句库
+  renderGoldenQuotes('openings');
 
   // 恢复草稿
   const drafts = JSON.parse(localStorage.getItem(`${getUserPrefix()}_essay_drafts`) || '{}');
@@ -2248,4 +2255,82 @@ function updateTTSButton(btnId, isPlaying) {
     if (text) text.textContent = btn.dataset.type === 'sample' ? '朗读范文' :
                                 btn.dataset.type === 'outline' ? '朗读提纲' : '朗读解析';
   }
+}
+
+// ===================== 万能金句库 =====================
+let currentGQTab = 'openings';
+
+function renderGoldenQuotes(tab) {
+  currentGQTab = tab;
+  const container = document.getElementById('golden-quotes-content');
+  if (!container || !goldenQuotes) return;
+  
+  // 更新tab样式
+  document.querySelectorAll('.gq-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  
+  const data = goldenQuotes[tab];
+  if (!data) return;
+  
+  let html = '';
+  
+  if (tab === 'singleQuotes') {
+    // 单句金句
+    data.forEach(item => {
+      html += `<div class="golden-single-quote">
+        <div class="golden-single-quote-text">"${item.quote}"</div>
+        <div class="golden-single-quote-source">—— ${item.source}</div>
+      </div>`;
+    });
+  } else {
+    // 段落模板
+    data.forEach(item => {
+      html += `<div class="golden-quote-item">
+        <div class="golden-quote-item-title">
+          <span>${item.title}</span>
+          <button type="button" class="golden-quote-item-copy" data-copy-id="${item.id}">📋 复制</button>
+        </div>
+        <div class="golden-quote-item-content">${item.content}</div>
+        <div class="golden-quote-item-usage">📌 适用：${item.usage}</div>
+      </div>`;
+    });
+  }
+  
+  container.innerHTML = html;
+  
+  // 绑定复制按钮事件
+  container.querySelectorAll('.golden-quote-item-copy').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const copyId = btn.dataset.copyId;
+      const allData = [...goldenQuotes.openings, ...goldenQuotes.bodyParagraphs, ...goldenQuotes.endings];
+      const item = allData.find(d => d.id === copyId);
+      if (item) {
+        navigator.clipboard.writeText(item.content).then(() => {
+          btn.textContent = '✅ 已复制';
+          setTimeout(() => { btn.textContent = '📋 复制'; }, 1500);
+        }).catch(() => {
+          // 降级方案
+          const textarea = document.createElement('textarea');
+          textarea.value = item.content;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          btn.textContent = '✅ 已复制';
+          setTimeout(() => { btn.textContent = '📋 复制'; }, 1500);
+        });
+      }
+    });
+  });
+}
+
+// 金句库tab切换事件（在bindEssayEvents中调用或直接绑定）
+function bindGoldenQuotesEvents() {
+  document.querySelectorAll('.gq-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      renderGoldenQuotes(tab.dataset.tab);
+    });
+  });
 }

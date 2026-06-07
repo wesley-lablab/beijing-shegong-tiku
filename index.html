@@ -773,6 +773,25 @@ header p { opacity: 0.92; font-size: 0.85em; }
   content: "📌"; position: absolute; left: 0; top: 4px; font-size: 0.9em;
 }
 
+/* 万能金句库 */
+.golden-quotes-box { margin-top: 12px; padding: 14px; background: #f0fdf4; border-radius: 12px; border-left: 4px solid #16a34a; }
+.golden-quotes-title { font-weight: 700; font-size: 0.88em; color: #16a34a; margin-bottom: 4px; }
+.golden-quotes-desc { font-size: 0.72em; color: #888; margin-bottom: 10px; }
+.golden-quotes-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.gq-tab { padding: 5px 12px; border-radius: 16px; border: 1px solid #bbf7d0; background: white; color: #16a34a; font-size: 0.75em; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.gq-tab.active { background: #16a34a; color: white; border-color: #16a34a; }
+.gq-tab:hover { opacity: 0.85; }
+.golden-quotes-content { max-height: 400px; overflow-y: auto; }
+.golden-quote-item { background: white; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; border: 1px solid #dcfce7; }
+.golden-quote-item-title { font-size: 0.8em; font-weight: 700; color: #15803d; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+.golden-quote-item-content { font-size: 0.78em; color: #444; line-height: 1.7; }
+.golden-quote-item-usage { font-size: 0.68em; color: #888; margin-top: 4px; font-style: italic; }
+.golden-quote-item-copy { padding: 3px 8px; border-radius: 10px; border: none; background: #f0fdf4; color: #16a34a; font-size: 0.68em; cursor: pointer; font-weight: 600; }
+.golden-quote-item-copy:hover { background: #dcfce7; }
+.golden-single-quote { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; background: white; border-radius: 8px; margin-bottom: 6px; border: 1px solid #dcfce7; font-size: 0.78em; line-height: 1.6; }
+.golden-single-quote-text { flex: 1; color: #444; }
+.golden-single-quote-source { color: #16a34a; font-size: 0.85em; font-weight: 600; white-space: nowrap; }
+
 .essay-filter-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
 
 /* ========== 响应式 ========== */
@@ -1366,6 +1385,21 @@ header p { opacity: 0.92; font-size: 0.85em; }
         <div class="essay-quotes-box">
           <div class="essay-quotes-title">📌 可引用金句</div>
           <ul class="essay-quotes-list" id="essay-quotes-list"></ul>
+        </div>
+      </div>
+      <div class="card essay-detail-card">
+        <div class="golden-quotes-box">
+          <div class="golden-quotes-title">💎 万能金句库</div>
+          <p class="golden-quotes-desc">精选北京市各区范文提炼，可直接套用到任何题型</p>
+          
+          <div class="golden-quotes-tabs">
+            <button class="gq-tab active" data-tab="openings">开头模板</button>
+            <button class="gq-tab" data-tab="bodyParagraphs">分论点模板</button>
+            <button class="gq-tab" data-tab="endings">结尾模板</button>
+            <button class="gq-tab" data-tab="singleQuotes">单句金句</button>
+          </div>
+          
+          <div class="golden-quotes-content" id="golden-quotes-content"></div>
         </div>
       </div>
     </div>
