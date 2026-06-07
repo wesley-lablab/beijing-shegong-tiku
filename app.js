@@ -1277,10 +1277,15 @@ function updateWrongPage() {
     wrongIds = wrongIds.filter(id => wrongMap[id] && wrongMap[id].count >= 3);
   }
 
+  const studySection = document.getElementById('wrong-study-section');
+
   if (wrongIds.length === 0) {
     wrongList.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">暂无错题</p>';
+    if (studySection) studySection.style.display = 'none';
     return;
   }
+
+  if (studySection) studySection.style.display = 'block';
 
   // 按错误次数降序排列
   wrongIds.sort((a, b) => (wrongMap[b]?.count || 0) - (wrongMap[a]?.count || 0));
