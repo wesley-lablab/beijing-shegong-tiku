@@ -140,4 +140,9 @@ const goldenQuotes = {
   ]
 };
 
-module.exports = goldenQuotes;
+// 浏览器兼容：同时支持全局变量和CommonJS
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = goldenQuotes;
+} else {
+  window.goldenQuotes = goldenQuotes;
+}

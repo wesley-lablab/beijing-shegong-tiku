@@ -1,7 +1,8 @@
 // ===================== 北京社区工作者招聘考试刷题应用 =====================
 // 完整JavaScript逻辑 - 包含用户系统、刷题、备考、复习、分析等全部功能
 
-const goldenQuotes = require('./golden_quotes');
+// goldenQuotes 通过 script 标签加载为全局变量
+const goldenQuotes = window.goldenQuotes || null;
 
 // ===================== 全局状态 =====================
 let currentUser = null;          // 当前登录用户名，null表示未登录
