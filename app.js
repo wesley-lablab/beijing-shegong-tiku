@@ -1199,19 +1199,40 @@ function updateAnalysis() {
         const outline = reviewOutlines[cate];
         const outlineText = outline ? outline.sections.map(s => s.title + '：' + s.items.join('、')).join('；') : '';
         
-        // 知识提纲语音
+        // 知识提纲语音+展开查看
         if (outlineText) {
           const safeText = outlineText.substring(0, 900);
+          // 生成提纲详情HTML
+          let outlineDetailHtml = '';
+          if (outline && outline.sections) {
+            outlineDetailHtml = outline.sections.map(s =>
+              `<div class="review-outline-section">
+                <div class="review-outline-section-title">${s.title}</div>
+                <ul class="review-outline-section-items">
+                  ${s.items.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+              </div>`
+            ).join('');
+          }
+
           resourceHtml += `
-            <div class="review-resource-item">
+            <div class="review-resource-item review-outline-item" data-cate="${cate}">
               <div class="review-resource-icon">📖</div>
-              <div class="review-resource-info">
+              <div class="review-resource-info" style="flex:1;">
                 <div class="review-resource-title">「${cate}」知识提纲</div>
-                <div class="review-resource-desc">${sub} · 错${count}题 · 点击朗读提纲加深记忆</div>
+                <div class="review-resource-desc">${sub} · 错${count}题</div>
               </div>
-              <button type="button" class="review-resource-action audio tts-review-btn" data-tts-text="${encodeURIComponent(safeText)}">
-                🔊 朗读
-              </button>
+              <div class="review-resource-actions">
+                <button type="button" class="review-resource-action audio tts-review-btn" data-tts-text="${encodeURIComponent(safeText)}">
+                  🔊 朗读
+                </button>
+                <button type="button" class="review-resource-action video review-outline-toggle-btn" data-cate="${cate}">
+                  📋 查看
+                </button>
+              </div>
+            </div>
+            <div class="review-outline-detail" id="review-outline-detail-${cate}" style="display:none;">
+              ${outlineDetailHtml}
             </div>`;
         }
         
@@ -1238,6 +1259,24 @@ function updateAnalysis() {
           e.stopPropagation();
           const text = decodeURIComponent(btn.dataset.ttsText);
           tts.play(text, null);
+        });
+      });
+
+      // 绑定提纲展开/收起按钮事件
+      resourceList.querySelectorAll('.review-outline-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const cate = btn.dataset.cate;
+          const detail = document.getElementById('review-outline-detail-' + cate);
+          if (!detail) return;
+
+          if (detail.style.display === 'none') {
+            detail.style.display = 'block';
+            btn.textContent = '▲ 收起';
+          } else {
+            detail.style.display = 'none';
+            btn.textContent = '📋 查看';
+          }
         });
       });
     } else {

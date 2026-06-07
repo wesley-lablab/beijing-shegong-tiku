@@ -759,6 +759,33 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .review-resource-action.video { background: #fce8e6; color: #ea4335; }
 .review-resource-action.video:hover { background: #fad2cf; }
 
+/* 复习资源-提纲展开 */
+.review-resource-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.review-outline-item { flex-wrap: wrap; }
+.review-outline-detail {
+  margin: 0 0 8px 0; padding: 12px; background: white;
+  border-radius: 10px; border: 1px solid #e8eaed;
+  margin-left: 36px;
+}
+.review-outline-section { margin-bottom: 10px; }
+.review-outline-section:last-child { margin-bottom: 0; }
+.review-outline-section-title {
+  font-size: 0.8em; font-weight: 700; color: #1a73e8;
+  margin-bottom: 4px; padding-bottom: 4px;
+  border-bottom: 1px dashed #e8eaed;
+}
+.review-outline-section-items {
+  list-style: none; padding: 0; margin: 0;
+}
+.review-outline-section-items li {
+  font-size: 0.75em; color: #555; padding: 3px 0 3px 16px;
+  position: relative; line-height: 1.6;
+}
+.review-outline-section-items li::before {
+  content: "•"; position: absolute; left: 2px; color: #1a73e8;
+  font-weight: 700;
+}
+
 .essay-quotes-box {
   margin-top: 12px; padding: 14px; background: #fce8e6; border-radius: 12px;
   border-left: 4px solid #ea4335;
