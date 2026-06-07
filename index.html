@@ -714,6 +714,29 @@ header p { opacity: 0.92; font-size: 0.85em; }
   border: 1px solid #ffe0b2;
 }
 
+/* 语音播放按钮 */
+.tts-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: 20px; border: none;
+  background: #e8f0fe; color: #1a73e8; font-size: 0.78em;
+  font-weight: 600; cursor: pointer; transition: all 0.15s;
+  margin-left: 8px; vertical-align: middle;
+}
+.tts-btn:hover { background: #d2e3fc; }
+.tts-btn:active { transform: scale(0.95); }
+.tts-btn.playing { background: #fce8e6; color: #ea4335; }
+.tts-btn .tts-icon { font-size: 1em; }
+.tts-btn .tts-text { font-size: 0.85em; }
+.tts-progress-bar {
+  width: 100%; height: 3px; background: #e8eaed; border-radius: 2px;
+  margin-top: 6px; overflow: hidden; display: none;
+}
+.tts-progress-bar.show { display: block; }
+.tts-progress-fill {
+  height: 100%; background: #1a73e8; border-radius: 2px;
+  width: 0%; transition: width 0.3s;
+}
+
 .essay-quotes-box {
   margin-top: 12px; padding: 14px; background: #fce8e6; border-radius: 12px;
   border-left: 4px solid #ea4335;
@@ -1269,6 +1292,13 @@ header p { opacity: 0.92; font-size: 0.85em; }
         </div>
       </div>
       <div class="card essay-detail-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div class="essay-detail-section-title">📝 高分范文</div>
+          <button class="tts-btn" id="tts-sample-btn" data-type="sample">
+            <span class="tts-icon">🔊</span>
+            <span class="tts-text">朗读范文</span>
+          </button>
+        </div>
         <div class="essay-sample-toggle" id="essay-sample-toggle">
           <span class="essay-sample-toggle-icon">&#9660;</span>
           📖 查看高分范文（建议先自己写再看）
@@ -1286,7 +1316,13 @@ header p { opacity: 0.92; font-size: 0.85em; }
       </div>
       <div class="card essay-detail-card">
         <div class="writing-method-box">
-          <div class="writing-method-title">✍️ 写作方法与提纲</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div class="writing-method-title" style="margin-bottom:0;">✍️ 写作方法与提纲</div>
+            <button class="tts-btn" id="tts-outline-btn" data-type="outline">
+              <span class="tts-icon">🔊</span>
+              <span class="tts-text">朗读提纲</span>
+            </button>
+          </div>
           <div class="writing-method-steps" id="writing-method-steps"></div>
           <div class="writing-method-outline-toggle" id="writing-method-outline-toggle">
             <span class="writing-method-outline-icon">&#9660;</span>

@@ -933,7 +933,13 @@ function renderResultAnswers() {
           <div class="result-question-text">${q.question}</div>
           <div class="result-options-display">${optionsDisplayHtml}</div>
           ${answerInfoHtml}
-          <div class="answer-explanation">${q.explanation}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <div class="answer-explanation" style="flex:1;margin-top:0;">${q.explanation}</div>
+            <button class="tts-btn tts-explanation-btn" data-idx="${idx}" data-type="explanation" style="margin-left:8px;flex-shrink:0;">
+              <span class="tts-icon">🔊</span>
+              <span class="tts-text">朗读解析</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -954,6 +960,21 @@ function renderResultAnswers() {
       } else {
         body.classList.add('show');
         icon.classList.add('open');
+      }
+    });
+  });
+
+  // 绑定客观题解析语音按钮事件
+  listEl.querySelectorAll('.tts-explanation-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      const q = currentQuestions[idx];
+      if (q && q.explanation) {
+        // 为按钮生成临时唯一ID
+        const tmpId = 'tts-exp-btn-' + idx;
+        btn.id = tmpId;
+        playTTS(q.explanation, tmpId);
       }
     });
   });
@@ -1987,6 +2008,23 @@ function openEssayDetail(eid) {
   // 金句
   document.getElementById('essay-quotes-list').innerHTML = q.keyQuotes.map(q => `<li>${q}</li>`).join('');
 
+  // 语音播放按钮事件绑定
+  const sampleBtn = document.getElementById('tts-sample-btn');
+  if (sampleBtn) {
+    sampleBtn.onclick = () => {
+      const sampleText = q.sampleEssay.title + '。' + q.sampleEssay.content;
+      playTTS(sampleText, 'tts-sample-btn');
+    };
+  }
+
+  const outlineBtn = document.getElementById('tts-outline-btn');
+  if (outlineBtn && q.writingMethod) {
+    outlineBtn.onclick = () => {
+      const outlineText = q.writingMethod.outline;
+      playTTS(outlineText, 'tts-outline-btn');
+    };
+  }
+
   // 写作方法与提纲
   if (q.writingMethod) {
     const stepsHtml = q.writingMethod.steps.map(s => `
@@ -2011,4 +2049,116 @@ function openEssayDetail(eid) {
 
   // 滚动到顶部
   window.scrollTo(0, 0);
+}
+
+// ===================== 语音播放功能 (TTS) =====================
+let currentTTS = null;
+let ttsAudio = null;
+
+async function playTTS(text, btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+
+  // 如果正在播放，则停止
+  if (ttsAudio && !ttsAudio.paused) {
+    ttsAudio.pause();
+    ttsAudio.currentTime = 0;
+    updateTTSButton(btnId, false);
+    return;
+  }
+
+  // 截取文本（FreeTTS免费版限制1000字符）
+  const ttsText = text.length > 900 ? text.substring(0, 900) + '...' : text;
+
+  updateTTSButton(btnId, true);
+
+  try {
+    const res = await fetch('https://freetts.org/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: ttsText,
+        voice: 'zh-CN-XiaoxiaoNeural',
+        rate: '+10%',
+        pitch: '+0Hz'
+      })
+    });
+
+    if (!res.ok) throw new Error('TTS请求失败');
+
+    const data = await res.json();
+    const fileId = data.file_id;
+
+    // 下载音频
+    const audioRes = await fetch(`https://freetts.org/api/audio/${fileId}`);
+    if (!audioRes.ok) throw new Error('音频下载失败');
+
+    const blob = await audioRes.blob();
+    const url = URL.createObjectURL(blob);
+
+    ttsAudio = new Audio(url);
+    ttsAudio.onended = () => {
+      updateTTSButton(btnId, false);
+      URL.revokeObjectURL(url);
+    };
+    ttsAudio.onerror = () => {
+      updateTTSButton(btnId, false);
+      URL.revokeObjectURL(url);
+      showToast('语音播放失败，请重试');
+    };
+
+    ttsAudio.play();
+
+  } catch (err) {
+    console.error('TTS错误:', err);
+    updateTTSButton(btnId, false);
+    // 降级到浏览器内置语音
+    fallbackTTS(ttsText, btnId);
+  }
+}
+
+function fallbackTTS(text, btnId) {
+  if (!window.speechSynthesis) {
+    showToast('您的浏览器不支持语音播放');
+    return;
+  }
+
+  // 停止之前的
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'zh-CN';
+  utterance.rate = 1.1;
+  utterance.pitch = 1;
+
+  // 尝试找到中文语音
+  const voices = window.speechSynthesis.getVoices();
+  const zhVoice = voices.find(v => v.lang.includes('zh') || v.lang.includes('cmn'));
+  if (zhVoice) utterance.voice = zhVoice;
+
+  utterance.onend = () => updateTTSButton(btnId, false);
+  utterance.onerror = () => {
+    updateTTSButton(btnId, false);
+    showToast('语音播放失败');
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function updateTTSButton(btnId, isPlaying) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  const icon = btn.querySelector('.tts-icon');
+  const text = btn.querySelector('.tts-text');
+
+  if (isPlaying) {
+    btn.classList.add('playing');
+    if (icon) icon.textContent = '⏹';
+    if (text) text.textContent = '停止';
+  } else {
+    btn.classList.remove('playing');
+    if (icon) icon.textContent = '🔊';
+    if (text) text.textContent = btn.dataset.type === 'sample' ? '朗读范文' :
+                                btn.dataset.type === 'outline' ? '朗读提纲' : '朗读解析';
+  }
 }
