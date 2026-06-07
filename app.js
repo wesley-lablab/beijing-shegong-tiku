@@ -2149,6 +2149,15 @@ let ttsAudio = null;
 let currentTTSBtnId = null;
 
 async function playTTS(text, btnId) {
+  // 浏览器语音能力检测
+  const hasSpeech = window.speechSynthesis && window.SpeechSynthesisUtterance;
+  const hasAudio = typeof Audio !== 'undefined';
+
+  if (!hasSpeech && !hasAudio) {
+    showToast('您的浏览器不支持语音播放功能');
+    return;
+  }
+
   // 如果当前正在播放
   if (ttsAudio && !ttsAudio.paused) {
     ttsAudio.pause();
@@ -2210,7 +2219,8 @@ async function playTTS(text, btnId) {
       updateTTSButton(btnId, false);
       if (currentTTSBtnId === btnId) currentTTSBtnId = null;
       URL.revokeObjectURL(url);
-      showToast('语音播放失败，请重试');
+      // 音频播放失败，尝试降级到浏览器内置语音
+      fallbackTTS(ttsText, btnId);
     };
 
     ttsAudio.play();
@@ -2220,51 +2230,80 @@ async function playTTS(text, btnId) {
     updateTTSButton(btnId, false);
     if (currentTTSBtnId === btnId) currentTTSBtnId = null;
     // 降级到浏览器内置语音
+    showToast('在线语音服务暂不可用，尝试使用浏览器内置语音...');
     fallbackTTS(ttsText, btnId);
   }
 }
 
 function fallbackTTS(text, btnId) {
-  if (!window.speechSynthesis) {
-    showToast('您的浏览器不支持语音播放');
+  // 更严格的浏览器语音支持检测
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+    showToast('您的浏览器不支持语音播放（请使用Chrome、Edge、Safari等现代浏览器）');
     return;
   }
 
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'zh-CN';
-  utterance.rate = 1.1;
-  utterance.pitch = 1;
-
-  // 处理语音列表异步加载
-  function setVoiceAndSpeak() {
-    const voices = window.speechSynthesis.getVoices();
-    const zhVoice = voices.find(v => v.lang && (v.lang.includes('zh') || v.lang.includes('cmn')));
-    if (zhVoice) utterance.voice = zhVoice;
-    window.speechSynthesis.speak(utterance);
+  // 某些浏览器（如微信内置浏览器）speechSynthesis对象存在但speak方法不可用
+  if (typeof window.speechSynthesis.speak !== 'function') {
+    showToast('当前环境不支持语音播放');
+    return;
   }
 
-  let voices = window.speechSynthesis.getVoices();
-  if (voices.length === 0) {
-    // 等待语音列表加载
-    window.speechSynthesis.onvoiceschanged = () => {
+  try {
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 1.1;
+    utterance.pitch = 1;
+
+    // 处理语音列表异步加载
+    function setVoiceAndSpeak() {
+      try {
+        const voices = window.speechSynthesis.getVoices();
+        const zhVoice = voices.find(v => v.lang && (v.lang.includes('zh') || v.lang.includes('cmn')));
+        if (zhVoice) utterance.voice = zhVoice;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.error('语音播放错误:', e);
+        updateTTSButton(btnId, false);
+        if (currentTTSBtnId === btnId) currentTTSBtnId = null;
+        showToast('语音播放失败，请尝试刷新页面');
+      }
+    }
+
+    let voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      // 等待语音列表加载
+      const voicesHandler = () => {
+        setVoiceAndSpeak();
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+      window.speechSynthesis.onvoiceschanged = voicesHandler;
+      // 超时处理：如果2秒内语音列表没加载，直接播放
+      setTimeout(() => {
+        window.speechSynthesis.onvoiceschanged = null;
+        setVoiceAndSpeak();
+      }, 2000);
+    } else {
       setVoiceAndSpeak();
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  } else {
-    setVoiceAndSpeak();
-  }
+    }
 
-  utterance.onend = () => {
-    updateTTSButton(btnId, false);
-    if (currentTTSBtnId === btnId) currentTTSBtnId = null;
-  };
-  utterance.onerror = () => {
+    utterance.onend = () => {
+      updateTTSButton(btnId, false);
+      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
+    };
+    utterance.onerror = (e) => {
+      console.error('SpeechSynthesis error:', e);
+      updateTTSButton(btnId, false);
+      if (currentTTSBtnId === btnId) currentTTSBtnId = null;
+      showToast('语音播放失败，请检查浏览器设置');
+    };
+  } catch (e) {
+    console.error('fallbackTTS错误:', e);
     updateTTSButton(btnId, false);
     if (currentTTSBtnId === btnId) currentTTSBtnId = null;
     showToast('语音播放失败');
-  };
+  }
 }
 
 function updateTTSButton(btnId, isPlaying) {
