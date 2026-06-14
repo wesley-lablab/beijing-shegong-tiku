@@ -599,6 +599,26 @@ header p { opacity: 0.92; font-size: 0.85em; }
 .bottom-nav-item.active { color: #1a73e8; }
 .bottom-nav-item svg { display: block; margin: 0 auto 2px; width: 22px; height: 22px; }
 
+/* 学习提醒设置 */
+.reminder-settings { margin-top: 10px; }
+.reminder-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f3f4; }
+.reminder-item:last-child { border-bottom: none; }
+.reminder-info { flex: 1; }
+.reminder-title { font-size: 0.85em; font-weight: 600; color: #1a1a1a; }
+.reminder-desc { font-size: 0.72em; color: #888; margin-top: 2px; }
+.reminder-select { padding: 6px 10px; border-radius: 8px; border: 1px solid #dadce0; background: white; font-size: 0.8em; color: #1a1a1a; outline: none; }
+.reminder-select:focus { border-color: #1a73e8; }
+
+/* 休息提醒弹窗 */
+.break-reminder-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; align-items: center; justify-content: center; }
+.break-reminder-overlay.show { display: flex; }
+.break-reminder-box { background: white; border-radius: 16px; padding: 24px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+.break-reminder-icon { font-size: 3em; margin-bottom: 12px; }
+.break-reminder-title { font-size: 1.1em; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+.break-reminder-desc { font-size: 0.85em; color: #666; margin-bottom: 16px; line-height: 1.5; }
+.break-reminder-buttons { display: flex; gap: 10px; }
+.break-reminder-buttons .btn { flex: 1; }
+
 /* ========== 主观题/作文页面 ========== */
 .essay-list-item {
   padding: 14px; border-bottom: 1px solid #eee; cursor: pointer;
@@ -1027,6 +1047,29 @@ header p { opacity: 0.92; font-size: 0.85em; }
         <div class="stat-box"><div class="stat-num" id="stat-wrong">0</div><div class="stat-label">错题数</div></div>
       </div>
     </div>
+
+    <!-- 学习时长统计 -->
+    <div class="card">
+      <h2>⏱️ 学习时长</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-time-today">0</div>
+          <div class="stat-label">今日(分钟)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-time-week">0</div>
+          <div class="stat-label">本周(分钟)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-time-total">0</div>
+          <div class="stat-label">累计(分钟)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-streak">0</div>
+          <div class="stat-label">连续天数</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== 刷题页面 ==================== -->
@@ -1216,6 +1259,56 @@ header p { opacity: 0.92; font-size: 0.85em; }
         <h3>推荐学习计划</h3>
         <p id="plan-daily-tip">设置考试日期后，系统将根据剩余天数生成个性化学习建议。</p>
       </div>
+    </div>
+
+    <!-- 学习提醒设置 -->
+    <div class="card">
+      <h2>🔔 学习提醒设置</h2>
+      <div class="reminder-settings">
+        <div class="reminder-item">
+          <div class="reminder-info">
+            <div class="reminder-title">定时休息提醒</div>
+            <div class="reminder-desc">每学习一段时间后提醒休息，保护视力</div>
+          </div>
+          <select id="reminder-break-interval" class="reminder-select">
+            <option value="0">关闭</option>
+            <option value="20">20分钟</option>
+            <option value="30" selected>30分钟</option>
+            <option value="45">45分钟</option>
+            <option value="60">60分钟</option>
+          </select>
+        </div>
+        <div class="reminder-item">
+          <div class="reminder-info">
+            <div class="reminder-title">每日学习目标</div>
+            <div class="reminder-desc">设置每日最少学习时长目标</div>
+          </div>
+          <select id="reminder-daily-goal" class="reminder-select">
+            <option value="0">不设置</option>
+            <option value="15">15分钟</option>
+            <option value="30" selected>30分钟</option>
+            <option value="60">60分钟</option>
+            <option value="90">90分钟</option>
+            <option value="120">120分钟</option>
+          </select>
+        </div>
+        <div class="reminder-item">
+          <div class="reminder-info">
+            <div class="reminder-title">每日刷题目标</div>
+            <div class="reminder-desc">设置每日最少刷题数量</div>
+          </div>
+          <select id="reminder-quiz-goal" class="reminder-select">
+            <option value="0">不设置</option>
+            <option value="10">10题</option>
+            <option value="20">20题</option>
+            <option value="30" selected>30题</option>
+            <option value="50">50题</option>
+            <option value="100">100题</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="btn-save-reminder" style="margin-top:10px;width:100%;">保存设置</button>
+      </div>
+      <div class="reminder-status" id="reminder-status" style="margin-top:10px;font-size:0.8em;color:#666;text-align:center;"></div>
     </div>
   </div>
 
@@ -1457,6 +1550,19 @@ header p { opacity: 0.92; font-size: 0.85em; }
     </div>
   </div>
 
+</div>
+
+<!-- 休息提醒弹窗 -->
+<div class="break-reminder-overlay" id="break-reminder-overlay">
+  <div class="break-reminder-box">
+    <div class="break-reminder-icon">☕</div>
+    <div class="break-reminder-title">该休息一会儿了</div>
+    <div class="break-reminder-desc">你已经学习了一段时间，建议起来活动一下，保护视力和颈椎。</div>
+    <div class="break-reminder-buttons">
+      <button class="btn btn-secondary" id="btn-break-later">稍后提醒</button>
+      <button class="btn btn-primary" id="btn-break-ok">我知道了</button>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== 底部导航（5个tab） ==================== -->

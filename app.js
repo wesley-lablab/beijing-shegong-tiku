@@ -407,6 +407,7 @@ function updateHome() {
   updateCountdown();
   updateReviewRemind();
   updateHighFreqWrong();
+  updateStudyTimeDisplay();
 }
 
 function updateStats() {
@@ -534,6 +535,7 @@ function bindQuizEvents() {
   document.getElementById('btn-quit-quiz').addEventListener('click', () => {
     if (confirm('确定要退出本次刷题吗？当前进度将不会保存。')) {
       stopTimer();
+      stopBreakReminder();
       showPage('page-home');
     }
   });
@@ -579,6 +581,7 @@ function startQuiz() {
   userAnswers = {};
   quizStartTime = Date.now();
   startTimer();
+  startBreakReminder();
   showPage('page-quiz');
   renderQuestion();
 }
@@ -599,6 +602,8 @@ function startTimer() {
     const s = String(elapsed % 60).padStart(2, '0');
     document.getElementById('quiz-timer').textContent = `${m}:${s}`;
   }, 1000);
+  // 启动学习时长记录
+  startStudyTimeTracking();
 }
 
 function stopTimer() {
@@ -606,6 +611,8 @@ function stopTimer() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  // 停止学习时长记录
+  stopStudyTimeTracking();
 }
 
 function renderQuestion() {
@@ -780,6 +787,7 @@ function nextQuestion() {
 
 function endQuiz() {
   stopTimer();
+  stopBreakReminder();
 
   const total = currentQuestions.length;
   let correctCount = 0;
@@ -911,6 +919,7 @@ function endQuiz() {
   // 生成逐题答案列表（折叠模式）
   renderResultAnswers();
 
+  checkDailyGoals();
   showPage('page-result');
 }
 
@@ -1047,6 +1056,7 @@ function bindResultEvents() {
   });
   document.getElementById('btn-go-home-result').addEventListener('click', () => {
     stopTimer();
+    stopBreakReminder();
     showPage('page-home');
   });
 }
@@ -1439,6 +1449,7 @@ function goToQuestion(id) {
   userAnswers = {};
   quizStartTime = Date.now();
   startTimer();
+  startBreakReminder();
   showPage('page-quiz');
   renderQuestion();
 }
@@ -1457,6 +1468,30 @@ function bindPlanEvents() {
     saveSettings(settings);
     updatePlan();
   });
+
+  // 提醒设置保存
+  const btnSaveReminder = document.getElementById('btn-save-reminder');
+  if (btnSaveReminder) {
+    btnSaveReminder.addEventListener('click', () => {
+      const settings = {
+        breakInterval: parseInt(document.getElementById('reminder-break-interval').value),
+        dailyGoal: parseInt(document.getElementById('reminder-daily-goal').value),
+        quizGoal: parseInt(document.getElementById('reminder-quiz-goal').value)
+      };
+      saveReminderSettings(settings);
+      const statusEl = document.getElementById('reminder-status');
+      if (statusEl) {
+        statusEl.textContent = '✅ 设置已保存';
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      }
+    });
+  }
+
+  // 休息提醒弹窗按钮
+  const btnBreakLater = document.getElementById('btn-break-later');
+  const btnBreakOk = document.getElementById('btn-break-ok');
+  if (btnBreakLater) btnBreakLater.addEventListener('click', hideBreakReminder);
+  if (btnBreakOk) btnBreakOk.addEventListener('click', hideBreakReminder);
 }
 
 function updatePlan() {
@@ -1801,6 +1836,7 @@ function startReviewQuiz(mode) {
   quizMode = 'review'; // 标记为复习模式
   quizStartTime = Date.now();
   startTimer();
+  startBreakReminder();
   showPage('page-quiz');
   renderQuestion();
 }
@@ -2319,4 +2355,173 @@ function showToast(message) {
   toast.textContent = message;
   toast.style.opacity = '1';
   setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+}
+
+// ===================== 学习时长统计 =====================
+function getStudyTimeData() {
+  const key = `${getUserPrefix()}_study_time`;
+  try { return JSON.parse(localStorage.getItem(key) || '{"daily":{},"total":0,"streak":{"current":0,"lastDate":""}}'); } catch (e) { return {daily:{}, total:0, streak:{current:0, lastDate:''}}; }
+}
+function saveStudyTimeData(data) {
+  localStorage.setItem(`${getUserPrefix()}_study_time`, JSON.stringify(data));
+}
+
+function recordStudyTime(minutes) {
+  const data = getStudyTimeData();
+  const today = new Date().toISOString().split('T')[0];
+
+  // 记录今日时长
+  if (!data.daily[today]) data.daily[today] = 0;
+  data.daily[today] += minutes;
+
+  // 累计总时长
+  data.total += minutes;
+
+  // 更新连续学习天数
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  if (data.streak.lastDate !== today) {
+    if (data.streak.lastDate === yesterdayStr) {
+      data.streak.current++;
+    } else {
+      data.streak.current = 1;
+    }
+    data.streak.lastDate = today;
+  }
+
+  saveStudyTimeData(data);
+  updateStudyTimeDisplay();
+}
+
+function getTodayStudyTime() {
+  const data = getStudyTimeData();
+  const today = new Date().toISOString().split('T')[0];
+  return data.daily[today] || 0;
+}
+
+function getWeekStudyTime() {
+  const data = getStudyTimeData();
+  let total = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    total += data.daily[key] || 0;
+  }
+  return total;
+}
+
+function updateStudyTimeDisplay() {
+  const data = getStudyTimeData();
+  const today = getTodayStudyTime();
+  const week = getWeekStudyTime();
+
+  const elToday = document.getElementById('stat-time-today');
+  const elWeek = document.getElementById('stat-time-week');
+  const elTotal = document.getElementById('stat-time-total');
+  const elStreak = document.getElementById('stat-streak');
+
+  if (elToday) elToday.textContent = today;
+  if (elWeek) elWeek.textContent = week;
+  if (elTotal) elTotal.textContent = data.total;
+  if (elStreak) elStreak.textContent = data.streak.current;
+}
+
+let studyTimeTracking = { start: 0, interval: null };
+
+function startStudyTimeTracking() {
+  studyTimeTracking.start = Date.now();
+  // 每分钟记录一次
+  studyTimeTracking.interval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - studyTimeTracking.start) / 60000);
+    if (elapsed > 0) {
+      recordStudyTime(1); // 记录1分钟
+      studyTimeTracking.start = Date.now(); // 重置计时起点
+    }
+  }, 60000); // 每分钟检查一次
+}
+
+function stopStudyTimeTracking() {
+  if (studyTimeTracking.interval) {
+    clearInterval(studyTimeTracking.interval);
+    studyTimeTracking.interval = null;
+  }
+  // 记录剩余时间（不足1分钟不记录）
+  const elapsed = Math.floor((Date.now() - studyTimeTracking.start) / 60000);
+  if (elapsed > 0) {
+    recordStudyTime(elapsed);
+  }
+  studyTimeTracking.start = 0;
+}
+
+// ===================== 学习提醒功能 =====================
+function getReminderSettings() {
+  const key = `${getUserPrefix()}_reminder_settings`;
+  try { return JSON.parse(localStorage.getItem(key) || '{"breakInterval":30,"dailyGoal":30,"quizGoal":30}'); } catch (e) { return {breakInterval:30, dailyGoal:30, quizGoal:30}; }
+}
+function saveReminderSettings(settings) {
+  localStorage.setItem(`${getUserPrefix()}_reminder_settings`, JSON.stringify(settings));
+}
+
+let breakReminderTimer = null;
+let breakReminderStart = 0;
+
+function startBreakReminder() {
+  const settings = getReminderSettings();
+  if (settings.breakInterval <= 0) return; // 关闭提醒
+
+  breakReminderStart = Date.now();
+  if (breakReminderTimer) clearInterval(breakReminderTimer);
+
+  breakReminderTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - breakReminderStart) / 60000);
+    if (elapsed >= settings.breakInterval) {
+      showBreakReminder();
+    }
+  }, 60000); // 每分钟检查
+}
+
+function stopBreakReminder() {
+  if (breakReminderTimer) {
+    clearInterval(breakReminderTimer);
+    breakReminderTimer = null;
+  }
+}
+
+function showBreakReminder() {
+  const overlay = document.getElementById('break-reminder-overlay');
+  if (overlay) overlay.classList.add('show');
+}
+
+function hideBreakReminder() {
+  const overlay = document.getElementById('break-reminder-overlay');
+  if (overlay) overlay.classList.remove('show');
+  // 重新开始计时
+  breakReminderStart = Date.now();
+}
+
+function checkDailyGoals() {
+  const settings = getReminderSettings();
+  const todayTime = getTodayStudyTime();
+
+  // 检查每日学习时长目标
+  if (settings.dailyGoal > 0 && todayTime >= settings.dailyGoal) {
+    showToast(`🎉 恭喜！今日学习时长已达 ${todayTime} 分钟，完成目标！`);
+  }
+
+  // 检查每日刷题目标
+  if (settings.quizGoal > 0) {
+    const today = new Date().toISOString().split('T')[0];
+    const history = getHistory();
+    let todayCount = 0;
+    Object.values(history).forEach(h => {
+      const hDate = new Date(h.time).toISOString().split('T')[0];
+      if (hDate === today) todayCount++;
+    });
+    if (todayCount >= settings.quizGoal) {
+      showToast(`🎉 恭喜！今日已完成 ${todayCount} 题，完成刷题目标！`);
+    }
+  }
 }
